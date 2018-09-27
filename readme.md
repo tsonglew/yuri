@@ -1,3 +1,3 @@
 # Yuri
 
-StarScraft AI
+StarCraft AI
