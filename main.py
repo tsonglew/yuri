@@ -1,8 +1,16 @@
+import random
+
 import sc2
 from sc2 import run_game, Race, maps, Difficulty
 from sc2.player import Bot, Computer
 from sc2.constants import NEXUS, PROBE, PYLON, ASSIMILATOR, GATEWAY, \
     CYBERNETICSCORE, STALKER
+
+
+BUILD_PYLON_SUPPLY_LEFT = 5
+NEXUS_MAX = 3
+OFFENCE_AMOUNT = 15
+DEFENCE_AMOUNT = 3
 
 class MainBot(sc2.BotAI):
     async def on_step(self, iteration):
@@ -13,6 +21,7 @@ class MainBot(sc2.BotAI):
         await self.expand()
         await self.offensive_force_building()
         await self.build_offensive_force()
+        await self.attack()
 
     async def build_workers(self):
         for nexus in self.units(NEXUS).ready.noqueue:
@@ -20,7 +29,7 @@ class MainBot(sc2.BotAI):
                 await self.do(nexus.train(PROBE))
 
     async def build_pylons(self):
-        if self.supply_left < 5 and not self.already_pending(PYLON):
+        if self.supply_left < BUILD_PYLON_SUPPLY_LEFT and not self.already_pending(PYLON):
             nexuses = self.units(NEXUS).ready
             if nexuses.exists:
                 if self.can_afford(PYLON):
@@ -39,7 +48,7 @@ class MainBot(sc2.BotAI):
                     await self.do(worker.build(ASSIMILATOR, vespene))
 
     async def expand(self):
-        if self.units(NEXUS).amount < 3 and self.can_afford(NEXUS):
+        if self.units(NEXUS).amount < NEXUS_MAX and self.can_afford(NEXUS):
             await self.expand_now()
 
     async def offensive_force_building(self):
@@ -50,7 +59,7 @@ class MainBot(sc2.BotAI):
                     if self.can_afford(CYBERNETICSCORE) and not self.already_pending(CYBERNETICSCORE):
                         await self.build(CYBERNETICSCORE, near=pylon)
             else:
-               if self.can_afford(GATEWAY) and not self.already_pending(GATEWAY):
+               if self.can_afford(GATEWAY) and self.units(GATEWAY).amount < 4:
                    await self.build(GATEWAY, near=pylon)
 
     async def build_offensive_force(self):
@@ -58,7 +67,23 @@ class MainBot(sc2.BotAI):
             if self.can_afford(STALKER) and self.supply_left > 0:
                 await self.do(gw.train(STALKER))
 
+    def find_target(self):
+        if len(self.known_enemy_units) > 0:
+            return random.choice(self.known_enemy_units)
+        if len(self.known_enemy_structures) > 0:
+            return random.choice(self.known_enemy_structures)
+        return self.enemy_start_locations[0]
+
+    async def attack(self):
+        if self.units(STALKER).amount > OFFENCE_AMOUNT:
+            for s in self.units(STALKER).idle:
+                await self.do(s.attack(self.find_target()))
+        elif self.units(STALKER).amount > DEFENCE_AMOUNT:
+            if len(self.known_enemy_units) > 0:
+                for s in self.units(STALKER).idle:
+                    await self.do(s.attack(random.choice(self.known_enemy_units)))
+
 run_game(maps.get('AbyssalReefLE'), [
     Bot(Race.Protoss, MainBot()),
-    Computer(Race.Terran, Difficulty.Hard)
-], realtime=False)
+    Computer(Race.Terran, Difficulty.Medium)
+], realtime=True)
