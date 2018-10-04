@@ -71,7 +71,7 @@ class MainBot(sc2.BotAI):
                 await self.build(GATEWAY, near=pylon)
         
         if self.units(CYBERNETICSCORE).ready.exists:
-            if len(self.units(STARGATE)) < self.iteration / self.IPS / 2:
+            if len(self.units(STARGATE)) < self.iteration / self.IPS / 3:
                 if self.can_afford(STARGATE) and not self.already_pending(STARGATE):
                     await self.build(STARGATE, near=pylon)
 
