@@ -1,11 +1,15 @@
 import os
 import random
 
+import cv2
+import numpy as np
+
 import sc2
 from sc2 import run_game, Race, maps, Difficulty
 from sc2.player import Bot, Computer
 from sc2.constants import NEXUS, PROBE, PYLON, ASSIMILATOR, GATEWAY, \
-    CYBERNETICSCORE, STALKER, STARGATE, VOIDRAY
+    CYBERNETICSCORE, STALKER, STARGATE, VOIDRAY, OBSERVER, ROBOTICSFACILITY
+from examples.protoss.cannon_rush import CannonRushBot
 
 
 BUILD_PYLON_SUPPLY_LEFT = 5
@@ -28,6 +32,71 @@ class MainBot(sc2.BotAI):
         await self.offensive_force_building()
         await self.build_offensive_force()
         await self.attack()
+        await self.intel()
+
+    async def intel(self):
+        game_data = np.zeros(
+            (self.game_info.map_size[1], self.game_info.map_size[0], 3),
+            dtype=np.uint8
+        )
+
+        draw_dict = {
+            NEXUS: [15, (0, 255, 0)],
+            PYLON: [3, (20, 235, 0)],
+            PROBE: [1, (55, 200, 0)],
+            ASSIMILATOR: [2, (55, 200, 0)],
+            GATEWAY: [3, (200, 100, 0)],
+            CYBERNETICSCORE: [3, (150, 150, 0)],
+            STARGATE: [5, (255, 0, 0)],
+            VOIDRAY: [3, (255, 100, 0)]
+        }
+        for unit_type in draw_dict:
+            for unit in self.units(unit_type):
+                position = unit.position
+                cv2.circle(
+                    game_data,
+                    (int(position[0]), int(position[1])),
+                    draw_dict[unit_type][0],
+                    draw_dict[unit_type][1],
+                    -1
+                )
+
+        flipped = cv2.flip(game_data, 0)
+        resized = cv2.resize(flipped, dsize=None, fx=2, fy=2)
+        cv2.imshow('Intel', resized)
+        cv2.waitKey(1)
+
+    def random_location_variance(self, enemy_start_location):
+        x = enemy_start_location[0]
+        y = enemy_start_location[1]
+
+        x *= 1 + random.randrange(-20, 20)/100
+        y *= 1 + random.randrange(-20, 20)/100
+
+        if x < 0:
+            x = 0
+        if y < 0:
+            y = 0
+        if x > self.game_info.map_size[0]:
+            x = self.game_info.map_size[0]
+        if y > self.game_info.map_size[1]:
+            y = self.game_info.map_size[1]
+
+        return position.Point2(position.Pointlike((x, y)))
+
+    async def scout(self):
+        if self.units(OBSERVER).amount > 0:
+            scout = self.units(OBSERVER)[0]
+            if scout.is_idle:
+                enemy_location = self.enemy_start_locations[0]
+                move_to = self.random_location_variance(enemy_location)
+                print(f'scout move to {move_to}')
+                await self.do(scout.move(move_to))
+        else:
+            for rf in self.units(ROBOTICSFACILITY).ready.noqueue:
+                if self.can_afford(OBSERVER) and self.supply_left > 0:
+                    await self.do(rf.train(OBSERVER))
+
 
     async def build_workers(self):
         probe_nums = len(self.units(PROBE))
@@ -66,19 +135,19 @@ class MainBot(sc2.BotAI):
         if self.units(GATEWAY).ready.exists and not self.units(CYBERNETICSCORE):
             if self.can_afford(CYBERNETICSCORE) and not self.already_pending(CYBERNETICSCORE):
                 await self.build(CYBERNETICSCORE, near=pylon)
-        elif len(self.units(GATEWAY)) < self.iteration / self.IPS / 2:
+        elif len(self.units(GATEWAY)) < 2:
             if self.can_afford(GATEWAY) and not self.already_pending(GATEWAY):
                 await self.build(GATEWAY, near=pylon)
         
         if self.units(CYBERNETICSCORE).ready.exists:
-            if len(self.units(STARGATE)) < self.iteration / self.IPS / 3:
+            if len(self.units(STARGATE)) < self.iteration / self.IPS / 2:
                 if self.can_afford(STARGATE) and not self.already_pending(STARGATE):
                     await self.build(STARGATE, near=pylon)
 
     async def build_offensive_force(self):
         # train stalkers
         for gw in self.units(GATEWAY).ready.noqueue:
-            if self.units(STALKER).amount < self.units(VOIDRAY).amount \
+            if self.units(STALKER).amount <= self.units(VOIDRAY).amount \
                     and self.can_afford(STALKER) and self.supply_left > 0:
                 await self.do(gw.train(STALKER))
 
@@ -115,10 +184,7 @@ class MainBot(sc2.BotAI):
 
 
 if __name__ == '__main__':
-    try:
-        run_game(maps.get('AbyssalReefLE'), [
-            Bot(Race.Protoss, MainBot()),
-            Computer(Race.Terran, Difficulty.Hard)
-        ], realtime=False)
-    finally:
-        os.system('defaults write -g com.apple.keyboard.fnState -boolean false')
+    run_game(maps.get('AbyssalReefLE'), [
+        Bot(Race.Protoss, MainBot()),
+        Computer(Race.Terran, Difficulty.Hard)
+    ], realtime=True)
