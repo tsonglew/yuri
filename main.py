@@ -1,6 +1,8 @@
 import os
 import random
 
+from utils import *
+
 import cv2
 import numpy as np
 
@@ -110,6 +112,22 @@ class MainBot(sc2.BotAI):
                         -1
                     )
 
+        # draw mineral, vespene lines
+        line_max = 50
+        mineral_ratio = down_to(self.minerals / 1500, 1.0)
+        vespene_ratio = down_to(self.vespene / 1500, 1.0)
+        population_ratio = down_to(self.supply_left / self.supply_cap, 1.0)
+        plausible_supply = self.supply_cap / 200
+        military_ratio = down_to(
+            (len(self.units(VOIDRAY))+len(self.units(STALKER))) /
+            (self.supply_cap - self.supply_left),
+            1.0
+        )
+        cv2.line(game_data, (0, 19), (int(line_max*military_ratio), 19), (250, 250, 200), 3) # worker & supply
+        cv2.line(game_data, (0, 15), (int(line_max*plausible_supply), 15), (220, 200, 200), 3)
+        cv2.line(game_data, (0, 11), (int(line_max*population_ratio), 11), (150, 150, 150), 3)
+        cv2.line(game_data, (0, 7), (int(line_max*vespene_ratio), 7), (210, 200, 0), 3)
+        cv2.line(game_data, (0, 3), (int(line_max*mineral_ratio), 3), (0, 255, 25), 3)
 
         flipped = cv2.flip(game_data, 0)
         resized = cv2.resize(flipped, dsize=None, fx=2, fy=2)
