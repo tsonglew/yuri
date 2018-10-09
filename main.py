@@ -35,7 +35,7 @@ class MainBot(sc2.BotAI):
         await self.offensive_force_building()
         await self.build_offensive_force()
         await self.attack()
-        await self.scout()
+        # await self.scout()
 
     async def intel(self):
         game_data = np.zeros(
