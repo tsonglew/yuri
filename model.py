@@ -37,3 +37,28 @@ opt = keras.optimizers.adam(lr=learning_rate, decay=1e-6)
 
 model.compile(loss='categorical_crossentropy', optimizer=opt, metrics=['accuracy'])
 tensorboard = TensorBoard(log_dir="logs/stage1")
+
+train_data_dir = 'train_data'
+
+hm_epochs = 10
+
+for i in range(hm_epochs):
+    current = 0
+    increment = 200
+    not_maximum = True
+    all_files = os.listdir(train_data_dir)
+    maximum = len(all_files)
+    random.shuffle(all_files)
+    
+    while not maximum:
+        print(f"Currently doing {current}:{current+increment}")
+        no_attacks = []
+        attack_closest_to_nexus = []
+        attack_enemy_structures = []
+        attack_enemy_start = []
+        for file in all_files[current:current+increment]:
+            full_path = os.path.join(train_data_dir, file)
+            data = np.load(full_path)
+            data = list(data)
+            for d in data:
+                choice = np.argmax(d[0])
