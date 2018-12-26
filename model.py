@@ -33,9 +33,12 @@ model.add(Dropout(0.5))
 model.add(Dense(4, activation='softmax'))
 
 learning_rate = 0.0001
-opt = keras.optimizers.adam(lr=learning_rate, decay=1e-6)
 
-model.compile(loss='categorical_crossentropy', optimizer=opt, metrics=['accuracy'])
+model.compile(
+    loss='categorical_crossentropy', 
+    optimizer=keras.optimizers.adam(lr=learning_rate, decay=1e-6),
+    metrics=['accuracy']
+)
 tensorboard = TensorBoard(log_dir="logs/stage1")
 
 train_data_dir = 'train_data'
@@ -48,9 +51,10 @@ for i in range(hm_epochs):
     not_maximum = True
     all_files = os.listdir(train_data_dir)
     maximum = len(all_files)
+    print(f'Training file num: {maximum}')
     random.shuffle(all_files)
     
-    while not maximum:
+    while not_maximum:
         print(f"Currently doing {current}:{current+increment}")
         no_attacks = []
         attack_closest_to_nexus = []

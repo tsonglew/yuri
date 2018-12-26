@@ -3,5 +3,5 @@ __pycache__/
 *.py[cod]
 *$py.class
 
-# Train data
+# Training data
 train_data/

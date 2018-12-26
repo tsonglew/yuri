@@ -21,10 +21,16 @@ DEFENCE_AMOUNT = 3
 
 class MainBot(sc2.BotAI):
     def __init__(self):
-        self.IPS = 165  # Iteration Per Second
+        self.IPS = 165  # probable Iteration Per Second
         self.MAX_WORKERS = 65
+        self.do_something_after = 0
+        self.train_data = []
+        self.headless = False
 
     async def on_step(self, iteration):
+        """
+        actions will be made every step 
+        """
         self.iteration = iteration
         await self.intel()
         await self.distribute_workers()
@@ -37,13 +43,26 @@ class MainBot(sc2.BotAI):
         await self.attack()
         # await self.scout()
 
-    async def intel(self):
+    def on_end(self, game_result):
+        """
+        save training data if win
+        """
+        print('--- on_end called ---')
+        print(game_result)
+
+        if game_result == Result.Victory:
+            np.save("train_data/{}.npy".format(str(int(time.time()))), np.array(self.train_data))
+
+    async def intel(self, headless=self.headless):
+        """
+        convert data into OpenGL images
+        """
         game_data = np.zeros(
             (self.game_info.map_size[1], self.game_info.map_size[0], 3),
             dtype=np.uint8
         )
 
-        # draw own
+        # draw bot units
         draw_dict = {
             NEXUS: [15, (0, 255, 0)],
             PYLON: [3, (20, 235, 0)],
@@ -130,17 +149,23 @@ class MainBot(sc2.BotAI):
         cv2.line(game_data, (0, 3), (int(line_max*mineral_ratio), 3), (0, 255, 25), 3)
 
         flipped = cv2.flip(game_data, 0)
-        resized = cv2.resize(flipped, dsize=None, fx=2, fy=2)
-        cv2.imshow('Intel', resized)
-        cv2.waitKey(1)
+
+        if not headless:
+            resized = cv2.resize(flipped, dsize=None, fx=2, fy=2)
+            cv2.imshow('Intel', resized)
+            cv2.waitKey(1)
 
     def random_location_variance(self, enemy_start_location):
+        """
+        return a random position near enemy start location; used for scouting
+        """
         x = enemy_start_location[0]
         y = enemy_start_location[1]
 
-        x *= 1 + random.randrange(-20, 20)/100
-        y *= 1 + random.randrange(-20, 20)/100
+        x *= 1 + random.randrange(-20, 20)/100 # range: 0.8x ~ 1.2x
+        y *= 1 + random.randrange(-20, 20)/100 # range: 0.8y ~ 1.2y
 
+        # make the out-of-map positions valid 
         if x < 0:
             x = 0
         if y < 0:
@@ -153,7 +178,12 @@ class MainBot(sc2.BotAI):
         return position.Point2(position.Pointlike((x, y)))
 
     async def scout(self):
+        """
+        train scouter if noqueue and can afford
+        scout if any scouters available
+        """
         if self.units(OBSERVER).amount > 0:
+            # scouting
             scout = self.units(OBSERVER)[0]
             if scout.is_idle:
                 enemy_location = self.enemy_start_locations[0]
@@ -161,6 +191,7 @@ class MainBot(sc2.BotAI):
                 print(f'scout move to {move_to}')
                 await self.do(scout.move(move_to))
         else:
+            # tarin scouters
             for rf in self.units(ROBOTICSFACILITY).ready.noqueue:
                 if self.can_afford(OBSERVER) and self.supply_left > 0:
                     await self.do(rf.train(OBSERVER))
@@ -173,6 +204,9 @@ class MainBot(sc2.BotAI):
                     await self.do(nexus.train(PROBE))
 
     async def build_pylons(self):
+        """
+        build pylons near nexuses if needed
+        """
         if self.supply_left < BUILD_PYLON_SUPPLY_LEFT and not self.already_pending(PYLON):
             nexuses = self.units(NEXUS).ready
             if nexuses.exists:
@@ -180,6 +214,9 @@ class MainBot(sc2.BotAI):
                     await self.build(PYLON, near=nexuses.first)
 
     async def build_assimilators(self):
+        """
+        build assimilators on vespene geyser near nexuses
+        """
         for nexus in self.units(NEXUS).ready:
             vespenes = self.state.vespene_geyser.closer_than(15.0, nexus)
             for vespene in vespenes:
@@ -192,6 +229,9 @@ class MainBot(sc2.BotAI):
                     await self.do(worker.build(ASSIMILATOR, vespene))
 
     async def expand(self):
+        """
+        build more nuxuses if affordable
+        """
         if self.units(NEXUS).amount < NEXUS_MAX and self.can_afford(NEXUS):
             await self.expand_now()
 
@@ -227,34 +267,82 @@ class MainBot(sc2.BotAI):
                 await self.do(sg.train(VOIDRAY))
 
     def find_target(self):
+        """
+        choose random known enemy units and structures. If none of them is uknown,
+        reutrn the location where enemy starts
+        """
         if len(self.known_enemy_units) > 0:
             return random.choice(self.known_enemy_units)
         if len(self.known_enemy_structures) > 0:
             return random.choice(self.known_enemy_structures)
         return self.enemy_start_locations[0]
 
-    async def offend(self, units):
+    async def defend(self, units):
         for u in units:
             for s in self.units(unit).idle:
                 await self.do(s.attack(random.choice(self.known_enemy_units)))
     
-    async def defend(self, units):
+    async def offend(self, units):
         if not isinstance(units, list):
             units = [units]
         for u in units:
             for s in self.units(u).idle:
                 await self.do(s.attack(self.find_target()))
 
+    async def random_attack(self):
+        """
+        voidrays choose random enemy units or structures to attack; used for 
+        collecting training data
+        """
+        if len(self.units(VOIDRAY).idle) > 0:
+            choice = random.randrange(0, 4)
+            target = False
+            if self.iteration > self.do_something_after:
+                if choice == 0:
+                    # no attack
+                    wait = random.randrange(20, 165)
+                    self.do_something_after = self.iteration + wait
+
+                elif choice == 1:
+                    # attack unit closest nexus
+                    if len(self.known_enemy_units) > 0:
+                        target = self.known_enemy_units.closest_to(random.choice(self.units(NEXUS)))
+
+                elif choice == 2:
+                    # attack enemy structures
+                    if len(self.known_enemy_structures) > 0:
+                        target = random.choice(self.known_enemy_structures)
+
+                elif choice == 3:
+                    # attack enemy start
+                    target = self.enemy_start_locations[0]
+
+                if target:
+                    for vr in self.units(VOIDRAY).idle:
+                        await self.do(vr.attack(target))
+                y = np.zeros(4)
+                y[choice] = 1
+                print(y)
+                # Training data consits of two tensors, which are random choice
+                # array(1*4) and game_data map(176*200*3)
+                self.train_data.append([y,self.flipped])
+
     async def attack(self):
-        aggresive_units = {
-            STALKER: [15, 3],
-            VOIDRAY: [8, 3]
-        }
-        for unit in aggresive_units:
-            if self.units(unit).amount > aggresive_units[unit][0]:
-                await self.offend(unit)
-            elif self.units(unit).amount > aggresive_units[unit][1]:
-                await self.defend(unit)
+        """
+        attack in manally defined order
+        """
+        if self.headless:
+            await random_attack()
+        else:
+            aggresive_units = {
+                STALKER: [15, 3],
+                VOIDRAY: [8, 3]
+            }
+            for unit in aggresive_units:
+                if self.units(unit).amount > aggresive_units[unit][0]:
+                    await self.offend(unit)
+                elif self.units(unit).amount > aggresive_units[unit][1]:
+                    await self.defend(unit)
 
 
 if __name__ == '__main__':
