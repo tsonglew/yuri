@@ -8,3 +8,9 @@ __pycache__/
 
 # Training data
 train_data/
+
+# Log file
+logs/
+
+# staged models
+BasicCNN*
