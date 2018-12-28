@@ -7,8 +7,7 @@ import cv2
 import numpy as np
 
 import sc2
-from sc2 import run_game, Race, maps, Difficulty, position
-from sc2.player import Bot, Computer
+from sc2 import position
 from sc2.constants import NEXUS, PROBE, PYLON, ASSIMILATOR, GATEWAY, \
     CYBERNETICSCORE, STALKER, STARGATE, VOIDRAY, OBSERVER, ROBOTICSFACILITY
 from examples.protoss.cannon_rush import CannonRushBot
@@ -345,10 +344,4 @@ class MainBot(sc2.BotAI):
                     await self.offend(unit)
                 elif self.units(unit).amount > aggresive_units[unit][1]:
                     await self.defend(unit)
-
-
-if __name__ == '__main__':
-    run_game(maps.get('AbyssalReefLE'), [
-        Bot(Race.Protoss, MainBot()),
-        Computer(Race.Terran, Difficulty.Hard)
-    ], realtime=False)
+    
