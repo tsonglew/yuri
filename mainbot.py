@@ -1,16 +1,13 @@
-import os
-import random
-
 from utils import *
+
+import random
 
 import cv2
 import numpy as np
-
 import sc2
 from sc2 import position
 from sc2.constants import NEXUS, PROBE, PYLON, ASSIMILATOR, GATEWAY, \
     CYBERNETICSCORE, STALKER, STARGATE, VOIDRAY, OBSERVER, ROBOTICSFACILITY
-from examples.protoss.cannon_rush import CannonRushBot
 
 
 BUILD_PYLON_SUPPLY_LEFT = 5

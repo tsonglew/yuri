@@ -3,7 +3,19 @@ from utils import check_data, recursive_shuffle, load_attack_train_data
 
 import os
 import random
+import argparse
 
+
+parser = argparse.ArgumentParser(
+    prog='train.py',
+    usage='python3 %(prog) [--reuse]',
+    description='Train model'
+)
+parser.add_argument(
+    '--reuse', action='store_true',
+    help='use a local model without rebuild a new one'
+)
+cmd_args = parser.parse()
 
 # Training model config consts
 test_size = 100
@@ -15,7 +27,11 @@ train_data_dir = os.path.join(
     'train_data'
 )
 
-model = BasicCNNModel.init().compile(lr=learning_rate).get_model()
+if cmd_args.reuse:
+    BasicCNNModel.load(f'BasicCNN-{hm_epochs}-epochs-{learning_rate}-LR-STAGE1')
+    BasicCNNModel.compile()
+else:
+    BasicCNNModel.init().compile(lr=learning_rate)
 
 for i in range(hm_epochs):
     current = 0

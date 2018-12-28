@@ -31,10 +31,32 @@ def load_attack_train_data(train_data_dir, files, test_size):
     """
     Load attack train data from file to np.array and shuffle
     """
+    no_attacks, attack_closest_to_nexus, attack_enemy_structures, \
+        attack_enemy_start = load_attack_data_file(train_data_dir, files)
+    
+    lengths = check_data(no_attacks, attack_closest_to_nexus,
+                        attack_enemy_structures, attack_enemy_start)
+    lowest_length = min(lengths)
+    recursive_shuffle([no_attacks, attack_closest_to_nexus, 
+                        attack_enemy_structures, attack_enemy_start], 1)
+    no_attacks = no_attacks[:lowest_length]
+    attack_closest_to_nexus = attack_closest_to_nexus[:lowest_length]
+    attack_enemy_structures = attack_enemy_structures[:lowest_length]
+    attack_enemy_start = attack_enemy_start[:lowest_length]
+    check_data(no_attacks, attack_closest_to_nexus,
+                attack_enemy_structures, attack_enemy_start)
+
+    train_data = no_attacks + attack_closest_to_nexus \
+                    + attack_enemy_start + attack_enemy_structures
+    return split_shuffle_train_test_data(train_data, test_size)
+
+
+def load_attack_data_file(train_data_dir, files):
     no_attacks = []
     attack_closest_to_nexus = []
     attack_enemy_structures = []
     attack_enemy_start = []
+
     for file in files:
         full_path = os.path.join(train_data_dir, file)
         data = np.load(full_path)
@@ -51,21 +73,10 @@ def load_attack_train_data(train_data_dir, files, test_size):
                 attack_enemy_structures.append([d[0], d[1]])
             elif choice == 3:
                 attack_enemy_start.append([d[0], d[1]])
-    
-    lengths = check_data(no_attacks, attack_closest_to_nexus,
-                        attack_enemy_structures, attack_enemy_start)
-    lowest_length = min(lengths)
-    recursive_shuffle([no_attacks, attack_closest_to_nexus, 
-                        attack_enemy_structures, attack_enemy_start], 1)
-    no_attacks = no_attacks[:lowest_length]
-    attack_closest_to_nexus = attack_closest_to_nexus[:lowest_length]
-    attack_enemy_structures = attack_enemy_structures[:lowest_length]
-    attack_enemy_start = attack_enemy_start[:lowest_length]
-    check_data(no_attacks, attack_closest_to_nexus,
-                attack_enemy_structures, attack_enemy_start)
+    return no_attacks, attack_closest_to_nexus, attack_enemy_structures, attack_enemy_start
 
-    train_data = no_attacks + attack_closest_to_nexus \
-                    + attack_enemy_start + attack_enemy_structures
+
+def split_shuffle_train_test_data(train_data, test_size):
     random.shuffle(train_data)
 
     x_train = np.array([i[1] for i in train_data[:-test_size]])
@@ -93,4 +104,3 @@ def sub_recursive_shuffle(obj, cdim=0, dim=None):
     random.shuffle(obj)
     for i in obj:
         sub_recursive_shuffle(i, cdim + 1, dim)
-

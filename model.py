@@ -65,4 +65,6 @@ class BasicCNNModel:
     def save(cls, fn):
         cls.model.save(fn)
 
-    
+    @classmethod
+    def load(cls, model_path):
+        cls.model.load(model_path)
