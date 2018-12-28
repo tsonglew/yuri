@@ -53,7 +53,7 @@ class MainBot(sc2.BotAI):
         if game_result == Result.Victory:
             np.save("train_data/{}.npy".format(str(int(time.time()))), np.array(self.train_data))
 
-    async def intel(self, headless=self.headless):
+    async def intel(self, headless=None):
         """
         convert data into OpenGL images
         """
@@ -133,15 +133,15 @@ class MainBot(sc2.BotAI):
 
         # draw mineral, vespene lines
         line_max = 50
-        mineral_ratio = down_to(self.minerals / 1500, 1.0)
-        vespene_ratio = down_to(self.vespene / 1500, 1.0)
-        population_ratio = down_to(self.supply_left / self.supply_cap, 1.0)
+        mineral_ratio = min([self.minerals / 1500, 1.0])
+        vespene_ratio = min([self.vespene / 1500, 1.0])
+        population_ratio = min([self.supply_left / self.supply_cap, 1.0])
         plausible_supply = self.supply_cap / 200
-        military_ratio = down_to(
+        military_ratio = min([
             (len(self.units(VOIDRAY))+len(self.units(STALKER))) /
             (self.supply_cap - self.supply_left),
             1.0
-        )
+        ])
         cv2.line(game_data, (0, 19), (int(line_max*military_ratio), 19), (250, 250, 200), 3) # worker & supply
         cv2.line(game_data, (0, 15), (int(line_max*plausible_supply), 15), (220, 200, 200), 3)
         cv2.line(game_data, (0, 11), (int(line_max*population_ratio), 11), (150, 150, 150), 3)
@@ -277,12 +277,14 @@ class MainBot(sc2.BotAI):
             return random.choice(self.known_enemy_structures)
         return self.enemy_start_locations[0]
 
-    async def defend(self, units):
+    async def offend(self, units):
+        if not isinstance(units, list):
+            units = [units]
         for u in units:
             for s in self.units(unit).idle:
                 await self.do(s.attack(random.choice(self.known_enemy_units)))
     
-    async def offend(self, units):
+    async def defend(self, units):
         if not isinstance(units, list):
             units = [units]
         for u in units:
