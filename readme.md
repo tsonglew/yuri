@@ -1,6 +1,30 @@
 # Yuri
 
-StarCraft AI
+Macro actions based StarCraft AI with Keras
+
+## Neural Network Construction
+
+![]()
+
+## Usage
+
+### Build Running Environment
+
+```sh
+$ pipenv install
+```
+
+### Run game
+
+```sh
+$ pipenv run python run.py
+```
+
+### Train model
+
+```sh
+$ pipenv run python train.py
+```
 
 ## Trainning Data Set
 
