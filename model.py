@@ -9,7 +9,6 @@ from keras.callbacks import TensorBoard
 
 
 class BasicCNNModel:
-    model = Sequential()
     log_dir = "logs/stage1"
 
     @classmethod

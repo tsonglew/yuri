@@ -15,13 +15,17 @@ NEXUS_MAX = 3
 OFFENCE_AMOUNT = 15
 DEFENCE_AMOUNT = 3
 
-class MainBot(sc2.BotAI):
+class MainBot(sc2.BotAI, use_model=False):
     def __init__(self):
         self.IPS = 165  # probable Iteration Per Second
         self.MAX_WORKERS = 65
         self.do_something_after = 0
-        self.train_data = []
-        self.headless = False
+        self.use_model = use_model
+        self.train_data = list()
+
+        if self.use_model:
+            print('Running game with BaiscCNN model')
+            self.model = keras.models.load_model("BasicCNN-30-epochs-0.0001-LR-4.2")
 
     async def on_step(self, iteration):
         """
@@ -44,12 +48,17 @@ class MainBot(sc2.BotAI):
         save training data if win
         """
         print('--- on_end called ---')
-        print(game_result)
+        print(f'Result: {game_result}')
+        print(f'Using model: {self.use_model}')
 
         if game_result == Result.Victory:
             np.save("train_data/{}.npy".format(str(int(time.time()))), np.array(self.train_data))
 
-    async def intel(self, headless=None):
+        with open('log.txt', 'a') as f:
+            prefix = 'Model: ' if self.use_model else 'Random: '
+            f.write(f'{prefix}{game_result}\n')
+
+    async def intel(self, headless=False):
         """
         convert data into OpenGL images
         """
@@ -287,15 +296,26 @@ class MainBot(sc2.BotAI):
             for s in self.units(u).idle:
                 await self.do(s.attack(self.find_target()))
 
-    async def random_attack(self):
+    async def attack(self):
         """
         voidrays choose random enemy units or structures to attack; used for 
         collecting training data
         """
         if len(self.units(VOIDRAY).idle) > 0:
-            choice = random.randrange(0, 4)
             target = False
             if self.iteration > self.do_something_after:
+                if self.use_model:
+                    prediction = self.model.predict([self.flipped.reshape([-1, 176, 200, 3])])
+                    choice = np.argmax(prediction[0])
+
+                    choice_dict = {0: "No Attack!",
+                                   1: "Attack close to our nexus!",
+                                   2: "Attack Enemy Structure!",
+                                   3: "Attack Eneemy Start!"}
+                    print("Choice #{}:{}".format(choice, choice_dict[choice]))
+                else:
+                    choice = random.randrange(0, 4)
+
                 if choice == 0:
                     # no attack
                     wait = random.randrange(20, 165)
@@ -324,21 +344,4 @@ class MainBot(sc2.BotAI):
                 # Training data consits of two tensors, which are random choice
                 # array(1*4) and game_data map(176*200*3)
                 self.train_data.append([y,self.flipped])
-
-    async def attack(self):
-        """
-        attack in manally defined order
-        """
-        if self.headless:
-            await random_attack()
-        else:
-            aggresive_units = {
-                STALKER: [15, 3],
-                VOIDRAY: [8, 3]
-            }
-            for unit in aggresive_units:
-                if self.units(unit).amount > aggresive_units[unit][0]:
-                    await self.offend(unit)
-                elif self.units(unit).amount > aggresive_units[unit][1]:
-                    await self.defend(unit)
     

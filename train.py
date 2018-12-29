@@ -28,10 +28,14 @@ train_data_dir = os.path.join(
 )
 
 if cmd_args.reuse:
-    BasicCNNModel.load(f'BasicCNN-{hm_epochs}-epochs-{learning_rate}-LR-STAGE1')
-    BasicCNNModel.compile()
+    model_path = os.path.join(
+        os.path.dirname(os.path.abspath(__file__)),
+        f'BasicCNN-{hm_epochs}-epochs-{learning_rate}-LR-STAGE1'
+    )
+    BasicCNNModel.load(model_path)
 else:
-    BasicCNNModel.init().compile(lr=learning_rate)
+    BasicCNNModel.init()
+BasicCNNModel.compile(lr=learning_rate)
 
 for i in range(hm_epochs):
     current = 0

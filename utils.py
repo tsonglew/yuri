@@ -52,6 +52,9 @@ def load_attack_train_data(train_data_dir, files, test_size):
 
 
 def load_attack_data_file(train_data_dir, files):
+    """
+    laod training data for attack macro actions
+    """
     no_attacks = []
     attack_closest_to_nexus = []
     attack_enemy_structures = []
@@ -77,6 +80,9 @@ def load_attack_data_file(train_data_dir, files):
 
 
 def split_shuffle_train_test_data(train_data, test_size):
+    """
+    split training data into train data and test data then shuffle
+    """
     random.shuffle(train_data)
 
     x_train = np.array([i[1] for i in train_data[:-test_size]])
