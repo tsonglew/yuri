@@ -2,9 +2,9 @@
 
 Macro actions based StarCraft AI with Keras
 
-## Neural Network Construction
+## NN-architecture
 
-![nn.svg](/images/nn.svg)
+![nn](images/nn.png)
 
 ## Usage
 
