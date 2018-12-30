@@ -2,6 +2,7 @@ from utils import *
 
 import random
 
+import keras
 import cv2
 import numpy as np
 import sc2
@@ -15,8 +16,8 @@ NEXUS_MAX = 3
 OFFENCE_AMOUNT = 15
 DEFENCE_AMOUNT = 3
 
-class MainBot(sc2.BotAI, use_model=False):
-    def __init__(self):
+class MainBot(sc2.BotAI):
+    def __init__(self, use_model):
         self.IPS = 165  # probable Iteration Per Second
         self.MAX_WORKERS = 65
         self.do_something_after = 0
@@ -25,7 +26,8 @@ class MainBot(sc2.BotAI, use_model=False):
 
         if self.use_model:
             print('Running game with BaiscCNN model')
-            self.model = keras.models.load_model("BasicCNN-30-epochs-0.0001-LR-4.2")
+            model_path = 'BasicCNN-10-epochs-0.0001-LR-STAGE1'
+            self.model = keras.models.load_model(model_path)
 
     async def on_step(self, iteration):
         """
@@ -153,10 +155,10 @@ class MainBot(sc2.BotAI, use_model=False):
         cv2.line(game_data, (0, 7), (int(line_max*vespene_ratio), 7), (210, 200, 0), 3)
         cv2.line(game_data, (0, 3), (int(line_max*mineral_ratio), 3), (0, 255, 25), 3)
 
-        flipped = cv2.flip(game_data, 0)
+        self.flipped = cv2.flip(game_data, 0)
 
         if not headless:
-            resized = cv2.resize(flipped, dsize=None, fx=2, fy=2)
+            resized = cv2.resize(self.flipped, dsize=None, fx=2, fy=2)
             cv2.imshow('Intel', resized)
             cv2.waitKey(1)
 

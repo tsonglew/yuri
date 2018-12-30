@@ -15,7 +15,7 @@ parser.add_argument(
     '--reuse', action='store_true',
     help='use a local model without rebuild a new one'
 )
-cmd_args = parser.parse()
+cmd_args = parser.parse_args()
 
 # Training model config consts
 test_size = 100
