@@ -4,7 +4,7 @@ Macro actions based StarCraft AI with Keras
 
 ## Neural Network Construction
 
-![]()
+![nn.svg](/images/nn.svg)
 
 ## Usage
 
