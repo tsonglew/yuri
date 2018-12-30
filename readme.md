@@ -10,6 +10,10 @@ Macro actions based StarCraft AI with Keras
 
 ### Build Running Environment
 
+Install Starcraft II from [official site](http://us.blizzard.com/en-us/%20/games/sc/)
+
+Install python package manager: [pipenv](https://github.com/pypa/pipenv)
+
 ```sh
 $ pipenv install
 ```
