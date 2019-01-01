@@ -1,9 +1,9 @@
 from utils import *
+from moniter import CV2Moniter
 
 import random
 
 import keras
-import cv2
 import numpy as np
 import sc2
 from sc2 import position
@@ -11,6 +11,7 @@ from sc2.constants import NEXUS, PROBE, PYLON, ASSIMILATOR, GATEWAY, \
     CYBERNETICSCORE, STALKER, STARGATE, VOIDRAY, OBSERVER, ROBOTICSFACILITY
 
 
+HEADLESS = False
 BUILD_PYLON_SUPPLY_LEFT = 5
 NEXUS_MAX = 3
 OFFENCE_AMOUNT = 15
@@ -23,6 +24,7 @@ class MainBot(sc2.BotAI):
         self.do_something_after = 0
         self.use_model = use_model
         self.train_data = list()
+        self.moniter = CV2Moniter(HEADLESS)
 
         if self.use_model:
             print('Running game with BaiscCNN model')
@@ -34,7 +36,7 @@ class MainBot(sc2.BotAI):
         actions will be made every step 
         """
         self.iteration = iteration
-        await self.intel()
+        await self.moniter.draw(self)
         await self.distribute_workers()
         await self.build_workers()
         await self.build_pylons()
@@ -59,108 +61,6 @@ class MainBot(sc2.BotAI):
         with open('log.txt', 'a') as f:
             prefix = 'Model: ' if self.use_model else 'Random: '
             f.write(f'{prefix}{game_result}\n')
-
-    async def intel(self, headless=False):
-        """
-        convert data into OpenGL images
-        """
-        game_data = np.zeros(
-            (self.game_info.map_size[1], self.game_info.map_size[0], 3),
-            dtype=np.uint8
-        )
-
-        # draw bot units
-        draw_dict = {
-            NEXUS: [15, (0, 255, 0)],
-            PYLON: [3, (20, 235, 0)],
-            PROBE: [1, (55, 200, 0)],
-            ASSIMILATOR: [2, (55, 200, 0)],
-            OBSERVER: [1, (255, 255, 255)],
-            GATEWAY: [3, (200, 100, 0)],
-            CYBERNETICSCORE: [3, (150, 150, 0)],
-            ROBOTICSFACILITY: [5, (215, 155, 0)],
-            STARGATE: [5, (255, 0, 0)],
-            VOIDRAY: [3, (255, 100, 0)]
-        }
-        for unit_type in draw_dict:
-            for unit in self.units(unit_type):
-                pos = unit.position
-                cv2.circle(
-                    game_data,
-                    (int(pos[0]), int(pos[1])),
-                    draw_dict[unit_type][0],
-                    draw_dict[unit_type][1],
-                    -1
-                )
-
-        # draw enemy buildings
-        main_base_names = ['nexus', 'commandcenter', 'hatchery']
-        for enemy_building in self.known_enemy_structures:
-            pos = enemy_building.position
-            if enemy_building.name.lower() in main_base_names:
-                cv2.circle(
-                    game_data,
-                    (int(pos[0]), int(pos[1])),
-                    15,
-                    (0, 0, 255),
-                    -1
-                )
-            else:
-                cv2.circle(
-                    game_data,
-                    (int(pos[0]), int(pos[1])),
-                    5,
-                    (200, 50, 212),
-                    -1
-                )
-        
-        # draw enemy units
-        for enemy_unit in self.known_enemy_units:
-            if not enemy_unit.is_structure:
-                worker_names = ['probe', 'scv', 'drone']
-                pos = enemy_unit.position
-                # draw workers
-                if enemy_unit.name.lower() in worker_names:
-                    cv2.circle(
-                        game_data, 
-                        (int(pos[0]), int(pos[1])), 
-                        1, 
-                        (55, 0, 155), 
-                        -1
-                    )
-                # draw else
-                else:
-                    cv2.circle(
-                        game_data, 
-                        (int(pos[0]), int(pos[1])), 
-                        3, 
-                        (50, 0, 215), 
-                        -1
-                    )
-
-        # draw mineral, vespene lines
-        line_max = 50
-        mineral_ratio = min([self.minerals / 1500, 1.0])
-        vespene_ratio = min([self.vespene / 1500, 1.0])
-        population_ratio = min([self.supply_left / self.supply_cap, 1.0])
-        plausible_supply = self.supply_cap / 200
-        military_ratio = min([
-            (len(self.units(VOIDRAY))+len(self.units(STALKER))) /
-            (self.supply_cap - self.supply_left),
-            1.0
-        ])
-        cv2.line(game_data, (0, 19), (int(line_max*military_ratio), 19), (250, 250, 200), 3) # worker & supply
-        cv2.line(game_data, (0, 15), (int(line_max*plausible_supply), 15), (220, 200, 200), 3)
-        cv2.line(game_data, (0, 11), (int(line_max*population_ratio), 11), (150, 150, 150), 3)
-        cv2.line(game_data, (0, 7), (int(line_max*vespene_ratio), 7), (210, 200, 0), 3)
-        cv2.line(game_data, (0, 3), (int(line_max*mineral_ratio), 3), (0, 255, 25), 3)
-
-        self.flipped = cv2.flip(game_data, 0)
-
-        if not headless:
-            resized = cv2.resize(self.flipped, dsize=None, fx=2, fy=2)
-            cv2.imshow('Intel', resized)
-            cv2.waitKey(1)
 
     def random_location_variance(self, enemy_start_location):
         """
@@ -345,5 +245,5 @@ class MainBot(sc2.BotAI):
                 print(y)
                 # Training data consits of two tensors, which are random choice
                 # array(1*4) and game_data map(176*200*3)
-                self.train_data.append([y,self.flipped])
+                self.train_data.append([y,self.moniter.flipped])
     

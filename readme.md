@@ -1,6 +1,8 @@
 # Yuri
 
-Macro actions based StarCraft AI with Keras
+Macro actions based CNN StarCraft AI
+
+[tech-tree](http://us.battle.net/sc2/en/game/race/terran/techtree/)
 
 ## NN-architecture
 
@@ -10,8 +12,7 @@ Macro actions based StarCraft AI with Keras
 
 ### Build Running Environment
 
-Install Starcraft II from [official site](http://us.blizzard.com/en-us/%20/games/sc/)
-
+Install Starcraft II from [official site](https://starcraft2.com/en-us/legacy-of-the-void/)
 Install python package manager: [pipenv](https://github.com/pypa/pipenv)
 
 ```sh
