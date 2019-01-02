@@ -1,38 +1,50 @@
 # Yuri
 
-Macro actions based CNN StarCraft AI
+Macro actions based toy CNN StarCraft II AIbot [tech-tree](http://us.battle.net/sc2/en/game/race/terran/techtree/)
 
-[tech-tree](http://us.battle.net/sc2/en/game/race/terran/techtree/)
+## Getting Started
 
-## NN-architecture
+### Prerequisites
 
-![nn](images/nn.png)
-
-## Usage
-
-### Build Running Environment
-
-Install Starcraft II from [official site](https://starcraft2.com/en-us/legacy-of-the-void/)
-Install python package manager: [pipenv](https://github.com/pypa/pipenv)
+* Install Starcraft II from [official site](https://starcraft2.com/en-us/legacy-of-the-void/)
+* Install python package manager: [pipenv](https://github.com/pypa/pipenv)
 
 ```sh
 $ pipenv install
 ```
 
+## Running the tests
+
+
+### Break down into end to end tests
+
+
+### And coding style tests
+
+```
+$ pylint *.py
+```
+
+## Deployment
+
 ### Run game
 
 ```sh
-$ pipenv run python game.py
+$ pipenv run python game.py [--use_model]
 ```
 
 ### Train model
 
 ```sh
-$ pipenv run python train.py
+$ pipenv run python train.py [--reuse]
 ```
 
-## Trainning Data Set
+## Built With
 
-```
-https://drive.google.com/file/d/1cO0BmbUhE2HsUC5ttQrLQC_wLTdCn2-u/view?usp=sharing
-```
+* [pipenv](https://github.com/pypa/pipenv)
+
+## License
+
+This project is licensed under the MIT License - see the [LICENSE.md](LICENSE) file for details
+
+## Acknowledgments

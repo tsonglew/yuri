@@ -1,3 +1,4 @@
+from basebots import *
 from utils import *
 from moniter import CV2Moniter
 
@@ -17,8 +18,10 @@ NEXUS_MAX = 3
 OFFENCE_AMOUNT = 15
 DEFENCE_AMOUNT = 3
 
-class MainBot(sc2.BotAI):
+
+class MainBot(ScoutBot):
     def __init__(self, use_model):
+        super().__init__()
         self.IPS = 165  # probable Iteration Per Second
         self.MAX_WORKERS = 65
         self.do_something_after = 0
@@ -31,11 +34,19 @@ class MainBot(sc2.BotAI):
             model_path = 'BasicCNN-10-epochs-0.0001-LR-STAGE1'
             self.model = keras.models.load_model(model_path)
 
+
     async def on_step(self, iteration):
         """
         actions will be made every step 
         """
-        self.iteration = iteration
+        # self.minute defined in Dentosal/python-sc2/sc2/bot_ai/BotAI
+        # self.minute = self.state.game_loop / 22.4 # / (1/1.4) * (1/16)
+        # approximately count in the second in game
+        self.minute = self.time / 60
+        print(f'minute: {self.minute}')
+
+        await self.build_scout()
+        await self.scout()
         await self.moniter.draw(self)
         await self.distribute_workers()
         await self.build_workers()
@@ -45,7 +56,7 @@ class MainBot(sc2.BotAI):
         await self.offensive_force_building()
         await self.build_offensive_force()
         await self.attack()
-        # await self.scout()
+
 
     def on_end(self, game_result):
         """
@@ -56,52 +67,13 @@ class MainBot(sc2.BotAI):
         print(f'Using model: {self.use_model}')
 
         if game_result == Result.Victory:
-            np.save("train_data/{}.npy".format(str(int(time.time()))), np.array(self.train_data))
+            np.save("local_train/{}.npy".format(str(int(time.time()))), np.array(self.train_data))
 
         with open('log.txt', 'a') as f:
             prefix = 'Model: ' if self.use_model else 'Random: '
             f.write(f'{prefix}{game_result}\n')
 
-    def random_location_variance(self, enemy_start_location):
-        """
-        return a random position near enemy start location; used for scouting
-        """
-        x = enemy_start_location[0]
-        y = enemy_start_location[1]
 
-        x *= 1 + random.randrange(-20, 20)/100 # range: 0.8x ~ 1.2x
-        y *= 1 + random.randrange(-20, 20)/100 # range: 0.8y ~ 1.2y
-
-        # make the out-of-map positions valid 
-        if x < 0:
-            x = 0
-        if y < 0:
-            y = 0
-        if x > self.game_info.map_size[0]:
-            x = self.game_info.map_size[0]
-        if y > self.game_info.map_size[1]:
-            y = self.game_info.map_size[1]
-
-        return position.Point2(position.Pointlike((x, y)))
-
-    async def scout(self):
-        """
-        train scouter if noqueue and can afford
-        scout if any scouters available
-        """
-        if self.units(OBSERVER).amount > 0:
-            # scouting
-            scout = self.units(OBSERVER)[0]
-            if scout.is_idle:
-                enemy_location = self.enemy_start_locations[0]
-                move_to = self.random_location_variance(enemy_location)
-                print(f'scout move to {move_to}')
-                await self.do(scout.move(move_to))
-        else:
-            # tarin scouters
-            for rf in self.units(ROBOTICSFACILITY).ready.noqueue:
-                if self.can_afford(OBSERVER) and self.supply_left > 0:
-                    await self.do(rf.train(OBSERVER))
 
     async def build_workers(self):
         probe_nums = len(self.units(PROBE))
@@ -109,6 +81,7 @@ class MainBot(sc2.BotAI):
             for nexus in self.units(NEXUS).ready.noqueue:
                 if self.can_afford(PROBE):
                     await self.do(nexus.train(PROBE))
+
 
     async def build_pylons(self):
         """
@@ -119,6 +92,7 @@ class MainBot(sc2.BotAI):
             if nexuses.exists:
                 if self.can_afford(PYLON):
                     await self.build(PYLON, near=nexuses.first)
+
 
     async def build_assimilators(self):
         """
@@ -135,12 +109,18 @@ class MainBot(sc2.BotAI):
                 if not self.units(ASSIMILATOR).closer_than(1.0, vespene).exists:
                     await self.do(worker.build(ASSIMILATOR, vespene))
 
+
     async def expand(self):
         """
         build more nuxuses if affordable
         """
-        if self.units(NEXUS).amount < NEXUS_MAX and self.can_afford(NEXUS):
-            await self.expand_now()
+        try:
+            if self.units(NEXUS).amount < self.minute/2 and \
+                    self.can_afford(NEXUS):
+                await self.expand_now()
+        except Exception as e:
+            print(e)
+
 
     async def offensive_force_building(self):
         if not self.units(PYLON).ready.exists:
@@ -154,12 +134,13 @@ class MainBot(sc2.BotAI):
                 await self.build(GATEWAY, near=pylon)
         
         if self.units(CYBERNETICSCORE).ready.exists:
-            if len(self.units(STARGATE)) < self.iteration / self.IPS / 2:
+            if len(self.units(STARGATE)) < self.minute:
                 if self.can_afford(STARGATE) and not self.already_pending(STARGATE):
                     await self.build(STARGATE, near=pylon)
             if self.units(ROBOTICSFACILITY).amount == 0:
                 if self.can_afford(ROBOTICSFACILITY) and not self.already_pending(ROBOTICSFACILITY):
                     await self.build(ROBOTICSFACILITY, near=pylon)
+
 
     async def build_offensive_force(self):
         # train stalkers
@@ -168,10 +149,12 @@ class MainBot(sc2.BotAI):
                     and self.can_afford(STALKER) and self.supply_left > 0:
                 await self.do(gw.train(STALKER))
 
+
         # train void-rays
         for sg in self.units(STARGATE).ready.noqueue:
             if self.can_afford(VOIDRAY) and self.supply_left > 0:
                 await self.do(sg.train(VOIDRAY))
+
 
     def find_target(self):
         """
@@ -184,12 +167,14 @@ class MainBot(sc2.BotAI):
             return random.choice(self.known_enemy_structures)
         return self.enemy_start_locations[0]
 
+
     async def offend(self, units):
         if not isinstance(units, list):
             units = [units]
         for u in units:
             for s in self.units(unit).idle:
                 await self.do(s.attack(random.choice(self.known_enemy_units)))
+
     
     async def defend(self, units):
         if not isinstance(units, list):
@@ -198,6 +183,7 @@ class MainBot(sc2.BotAI):
             for s in self.units(u).idle:
                 await self.do(s.attack(self.find_target()))
 
+
     async def attack(self):
         """
         voidrays choose random enemy units or structures to attack; used for 
@@ -205,28 +191,33 @@ class MainBot(sc2.BotAI):
         """
         if len(self.units(VOIDRAY).idle) > 0:
             target = False
-            if self.iteration > self.do_something_after:
+            if self.minute > self.do_something_after:
                 if self.use_model:
-                    prediction = self.model.predict([self.flipped.reshape([-1, 176, 200, 3])])
+                    flipped = self.moniter.get_flipped()
+                    prediction = self.model.predict([flipped.reshape([-1, 176, 200, 3])])
                     choice = np.argmax(prediction[0])
 
-                    choice_dict = {0: "No Attack!",
-                                   1: "Attack close to our nexus!",
-                                   2: "Attack Enemy Structure!",
-                                   3: "Attack Eneemy Start!"}
+                    choice_dict = {
+                        0: "No Attack!",
+                        1: "Attack close to our nexus!",
+                        2: "Attack Enemy Structure!",
+                        3: "Attack Eneemy Start!"
+                    }
                     print("Choice #{}:{}".format(choice, choice_dict[choice]))
                 else:
                     choice = random.randrange(0, 4)
 
                 if choice == 0:
                     # no attack
-                    wait = random.randrange(20, 165)
-                    self.do_something_after = self.iteration + wait
+                    wait = random.randrange(7,100)/100
+                    self.do_something_after = self.time + wait
 
                 elif choice == 1:
                     # attack unit closest nexus
                     if len(self.known_enemy_units) > 0:
-                        target = self.known_enemy_units.closest_to(random.choice(self.units(NEXUS)))
+                        own_nexuses = self.units(NEXUS)
+                        if len(own_nexuses) > 0:
+                            target = self.known_enemy_units.closest_to(random.choice(own_nexuses))
 
                 elif choice == 2:
                     # attack enemy structures
@@ -238,8 +229,9 @@ class MainBot(sc2.BotAI):
                     target = self.enemy_start_locations[0]
 
                 if target:
-                    for vr in self.units(VOIDRAY).idle:
-                        await self.do(vr.attack(target))
+                    for offensive_type in (STALKER, VOIDRAY):
+                        for unit in self.units(offensive_type).idle:
+                            await self.do(unit.attack(target))
                 y = np.zeros(4)
                 y[choice] = 1
                 print(y)

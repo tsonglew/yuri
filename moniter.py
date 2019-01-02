@@ -9,8 +9,10 @@ class CV2Moniter:
         self.worker_names = ['probe', 'scv', 'drone']
         self.main_base_names = [
             'nexus', # Protoss
-            'commandcenter', # Terran
             'hatchery' # Zerg
+            'commandcenter', # Terran
+            'orbitalcommand',  # Terran(Upgraded)
+            'planetaryfortress'  # Terran(Upgraded)
         ]
         self.draw_dict = {
             NEXUS: [15, (0, 255, 0)],
@@ -40,6 +42,7 @@ class CV2Moniter:
         await self.flip(game_data)
 
         if not self.headless:
+            # dsize = Size(round(fx*src.cols), round(fy*src.rows))
             resized = cv2.resize(self.flipped, dsize=None, fx=2, fy=2)
             cv2.imshow('Moniter', resized)
             cv2.waitKey(1)
@@ -141,3 +144,6 @@ class CV2Moniter:
     
     async def flip(self, game_data):
         self.flipped = cv2.flip(game_data, 0)
+
+    def get_flipped(self):
+        return self.flipped

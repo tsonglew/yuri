@@ -15,15 +15,15 @@ class BasicCNNModel:
     def init(cls):
         cls.model = Sequential()
         cls.model.add(Conv2D(32, (3, 3), padding='same', input_shape=(176, 200, 3), activation='relu'))
-        cls.model.add(Conv2D(32, (3, 3), activation='relu'))
+        # cls.model.add(Conv2D(32, (3, 3), activation='relu'))
         cls.model.add(MaxPooling2D(pool_size=(2, 2)))
         cls.model.add(Dropout(0.2))
         cls.model.add(Conv2D(64, (3, 3), padding='same', activation='relu'))
-        cls.model.add(Conv2D(64, (3, 3), activation='relu'))
+        # cls.model.add(Conv2D(64, (3, 3), activation='relu'))
         cls.model.add(MaxPooling2D(pool_size=(2, 2)))
         cls.model.add(Dropout(0.2))
         cls.model.add(Conv2D(128, (3, 3), padding='same', activation='relu'))
-        cls.model.add(Conv2D(128, (3, 3), activation='relu'))
+        # cls.model.add(Conv2D(128, (3, 3), activation='relu'))
         cls.model.add(MaxPooling2D(pool_size=(2, 2)))
         cls.model.add(Dropout(0.2))
         cls.model.add(Flatten())
@@ -51,6 +51,7 @@ class BasicCNNModel:
             verbose=1, 
             callbacks=[cls.get_tensorboard()]
         )
+        return cls
     
     @classmethod
     def get_tensorboard(cls):
@@ -63,7 +64,9 @@ class BasicCNNModel:
     @classmethod
     def save(cls, fn):
         cls.model.save(fn)
+        return cls
 
     @classmethod
     def load(cls, model_path):
         cls.model.load(model_path)
+        return cls
