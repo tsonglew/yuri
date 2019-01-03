@@ -1,6 +1,6 @@
 from .basebots import *
 from .utils import *
-from .moniter import CV2Moniter
+from .moniters import ChromaticMoniter, MonochromeMoniter
 from .loggers import logger
 
 import random
@@ -34,7 +34,7 @@ class MainBot(ScoutBot, AttackBot, BuildBot, ExpandBot):
         self.MAX_WORKERS = 65
         self.use_model = use_model
         self.train_data = list()
-        self.moniter = CV2Moniter(headless=False)
+        self.moniter = MonochromeMoniter(headless=False)
 
         if self.use_model:
             logger.info(f'Running game with BaiscCNN model: {model_path}')

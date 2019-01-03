@@ -41,7 +41,7 @@ if str(cmd_args.type) == 'game':
         np.save(f'local_train/{str(int(time.time()))}.npy', 
                 np.array(game_launcher.get_train_data()))
 
-    with open('log.txt', 'a') as f:
+    with open('logs/log.txt', 'a') as f:
         prefix = 'Model: ' if game_launcher.use_model else 'Random: '
         f.write(f'{datetime.datetime.now()}:{prefix}{game_result}\n')
 

@@ -1,12 +1,16 @@
+from .base_moniter import BaseMoniter
+
 import cv2
 import numpy as np
 from sc2.constants import NEXUS, PROBE, PYLON, ASSIMILATOR, GATEWAY, \
     CYBERNETICSCORE, STALKER, STARGATE, VOIDRAY, OBSERVER, ROBOTICSFACILITY
 
-class CV2Moniter:
+
+class ChromaticMoniter(BaseMoniter):
+
     def __init__(self, headless):
+        super().__init__(headless)
         self.flipped = None
-        self.headless = headless
         self.worker_names = ['probe', 'scv', 'drone']
         self.main_base_names = [
             'nexus', # Protoss
@@ -28,6 +32,7 @@ class CV2Moniter:
             VOIDRAY: [3, (255, 100, 0)]
         }
 
+
     async def draw(self, bot):
         """
         convert data into OpenGL images
@@ -43,10 +48,8 @@ class CV2Moniter:
         await self.flip(game_data)
 
         if not self.headless:
-            # dsize = Size(round(fx*src.cols), round(fy*src.rows))
-            resized = cv2.resize(self.flipped, dsize=None, fx=2, fy=2)
-            cv2.imshow('Moniter', resized)
-            cv2.waitKey(1)
+            self.show(bot.title, self.flipped)
+
 
     async def draw_own_units(self, bot, game_data):
         """
@@ -63,6 +66,7 @@ class CV2Moniter:
                     -1
                 )
 
+
     async def draw_enemy_buildings(self, bot, game_data):
         for enemy_building in bot.known_enemy_structures:
             pos = enemy_building.position
@@ -71,6 +75,7 @@ class CV2Moniter:
             else:
                 await self.draw_anonymous_enemy_building(game_data, pos)
         
+
     async def draw_enemy_main_base(self, game_data, pos):
         cv2.circle(
             game_data,
@@ -79,6 +84,7 @@ class CV2Moniter:
             (0, 0, 255),
             -1
         )
+
 
     async def draw_anonymous_enemy_building(self, game_data, pos):
         cv2.circle(
@@ -89,6 +95,7 @@ class CV2Moniter:
             -1
         )
 
+
     async def draw_enemy_units(self, bot, game_data):
         for enemy_unit in bot.known_enemy_units:
             if not enemy_unit.is_structure:
@@ -97,6 +104,7 @@ class CV2Moniter:
                     await self.draw_enemy_worker(game_data, pos)
                 else:
                     await self.draw_anonymous_enemy_units(game_data, pos)
+
 
     async def draw_enemy_worker(self, game_data, pos):
         cv2.circle(
@@ -115,36 +123,3 @@ class CV2Moniter:
             (50, 0, 215), 
             -1
         )
-
-    async def draw_resources(self, bot, game_data):
-        """
-        draw mineral, vespene lines
-        """
-        line_max = 50
-
-        military_ratio, plausible_supply, population_ratio, vespene_ratio, \
-            mineral_ratio = await self.calculate_resources(bot)
-        cv2.line(game_data, (0, 19), (int(line_max*military_ratio), 19), (250, 250, 200), 3) # worker & supply
-        cv2.line(game_data, (0, 15), (int(line_max*plausible_supply), 15), (220, 200, 200), 3)
-        cv2.line(game_data, (0, 11), (int(line_max*population_ratio), 11), (150, 150, 150), 3)
-        cv2.line(game_data, (0, 7), (int(line_max*vespene_ratio), 7), (210, 200, 0), 3)
-        cv2.line(game_data, (0, 3), (int(line_max*mineral_ratio), 3), (0, 255, 25), 3)
-
-    async def calculate_resources(self, bot):
-        mineral_ratio = min([bot.minerals / 1500, 1.0])
-        vespene_ratio = min([bot.vespene / 1500, 1.0])
-        population_ratio = min([bot.supply_left / (bot.supply_cap + 1), 1.0])
-        plausible_supply = bot.supply_cap / 200 # Total available supply / 200(Max limited population)
-        military_ratio = min([
-            (len(bot.units(VOIDRAY))+len(bot.units(STALKER))) /
-            max(bot.supply_cap - bot.supply_left, 1.0),
-            1.0
-        ])
-        return military_ratio, plausible_supply, population_ratio, \
-                vespene_ratio, mineral_ratio
-    
-    async def flip(self, game_data):
-        self.flipped = cv2.flip(game_data, 0)
-
-    def get_flipped(self):
-        return self.flipped
