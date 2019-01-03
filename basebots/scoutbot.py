@@ -1,4 +1,5 @@
 from .utils import random_location_variance
+from ..loggers import logger
 
 import math
 
@@ -13,7 +14,10 @@ PROBE_SCOUT_MAX_NUM = 1
 
 
 class ScoutBot(sc2.BotAI):
+
     def __init__(self):
+        super().__init__()
+
         # sount and expand
         self.expand_distance_location = dict()
         self.scouts_and_spots = dict()
@@ -35,7 +39,6 @@ class ScoutBot(sc2.BotAI):
                 self.game_info.map_size[0],
                 self.game_info.map_size[1]
             )
-            print(f'Go to scout {scout_target}')
             await self.do(scouting_probe.move(scout_target))
             return
 
@@ -94,13 +97,3 @@ class ScoutBot(sc2.BotAI):
                         await self.do(ob.move(location))
                         self.scouts_and_spots[ob.tag] = location
                         break
-
-
-    async def build_scout(self):
-        """
-        train observers
-        """
-        if len(self.units(OBSERVER)) < self.time//(60*3):
-            for rf in self.units(ROBOTICSFACILITY).ready.noqueue:
-                if self.can_afford(OBSERVER) and self.supply_left > 0:
-                    await self.do(rf.train(OBSERVER))
