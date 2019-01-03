@@ -15,9 +15,11 @@ $ pipenv install
 
 ## Running the tests
 
+To-do
 
 ### Break down into end to end tests
 
+To-do
 
 ### And coding style tests
 
@@ -30,13 +32,13 @@ $ pylint *.py
 ### Run game
 
 ```sh
-$ pipenv run python game.py [--use_model]
+$ pipenv run python -m yuri.main --type game [--use_model]
 ```
 
 ### Train model
 
 ```sh
-$ pipenv run python train.py [--reuse]
+$ pipenv run python -m yuri.train --type train [--reuse]
 ```
 
 ## Built With
@@ -48,3 +50,5 @@ $ pipenv run python train.py [--reuse]
 This project is licensed under the MIT License - see the [LICENSE.md](LICENSE) file for details
 
 ## Acknowledgments
+
+To-do
