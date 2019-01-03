@@ -47,15 +47,12 @@ class Trainer:
             random.shuffle(all_files)
 
             while current <= maximum:
-                try:
-                    origin_files = all_files[current:current+self.increment]
-                    logger.debug(f'WORKING ON {current}:{current+self.increment}, EPOCH:{i}')
-                    choices = self.prepare_choices(origin_files)
-                    x_train, y_train, x_test, y_test = self.prepare_train_data(choices)
-                    self.fit(x_train, y_train, x_test, y_test)
-                    self.save("BasicCNN-5000-epochs-0.001-LR-STAGE2")
-                except Exception as e:
-                    print(str(e))
+                origin_files = all_files[current: current+self.increment]
+                logger.debug(f'WORKING ON {current}:{current+self.increment}, EPOCH:{i}')
+                choices = self.prepare_choices(origin_files)
+                x_train, y_train, x_test, y_test = self.prepare_train_data(choices)
+                self.fit(x_train, y_train, x_test, y_test)
+                self.save("BasicCNN-5000-epochs-0.001-LR-STAGE2")
                 current += self.increment
 
 
@@ -99,6 +96,8 @@ class Trainer:
                     choices[choice].append([d[0], d[1]])
             except Exception as e:
                 logger.error(str(e))
+
+        return choices
 
     
     def shuffle_choices(self, choices):
@@ -149,23 +148,16 @@ class Trainer:
 
         lengths = list()
         for choice, choice_data in enumerate(choices):
-            logger.debug('Length of {choice} is: {len(choice_data)}')
+            logger.debug(f'Length of {choice} is: {len(choice_data)}')
             total_data += len(choices[choice])
             lengths.append(len(choices[choice]))
 
-        logger.debug("Total data length now is:", total_data)
+        logger.debug(f'Total data length now is: {total_data}')
         return lengths
 
 
     def fit(self, x_train, y_train, x_test, y_test):
-        self.model.fit(
-            x_train, y_train,
-            batch_size=self.batch_size,
-            validation_data=(x_test, y_test),
-            shuffle=True,
-            epochs=1,
-            verbose=1, callbacks=[self.tensorboard]
-        )
+        self.model.fit(x_train, y_train, x_test, y_test, self.batch_size)
         return self
 
 

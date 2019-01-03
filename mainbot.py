@@ -67,11 +67,10 @@ class MainBot(ScoutBot, AttackBot, BuildBot, ExpandBot):
                 choice = random.randrange(0, 14)
 
             (func, name) = self.choices[choice]
-            try:
-                logger.debug(name)
-                await func()
-            except Exception as e:
-                print(str(e))
+
+            logger.debug(name)
+            await func()
+
             choice_array = np.zeros(14)
             choice_array[choice] = 1
             self.train_data.append([choice_array, self.moniter.flipped])
