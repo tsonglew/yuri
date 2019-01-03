@@ -11,6 +11,7 @@ train_data/
 
 # Log file
 logs/
+log.txt
 
 # staged models
 BasicCNN*

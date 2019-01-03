@@ -20,10 +20,8 @@ def check_data(no_attacks, attack_closest_to_nexus,
 
     lengths = []
     for choice in choices:
-        print("Length of {} is: {}".format(choice, len(choices[choice])))
         lengths.append(len(choices[choice]))
 
-    print("Total data length now is:", sum(lengths))
     return lengths
 
 
@@ -86,9 +84,7 @@ def split_shuffle_train_test_data(train_data, test_size):
     random.shuffle(train_data)
 
     x_train = np.array([i[1] for i in train_data[:-test_size]])
-    print(f'x_train original shape: {x_train.shape}')
     x_train = x_train.reshape(-1, 176, 200, 3)
-    print(f'x_train shape after reshaping: {x_train.shape}')
     y_train = np.array([i[0] for i in train_data[:-test_size]])
 
     x_test = np.array([i[1] for i in train_data[-test_size:]]).reshape(-1, 176, 200, 3)

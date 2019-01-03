@@ -5,6 +5,7 @@ from sc2.constants import NEXUS, PROBE, PYLON, ASSIMILATOR, GATEWAY, \
 
 class CV2Moniter:
     def __init__(self, headless):
+        self.flipped = None
         self.headless = headless
         self.worker_names = ['probe', 'scv', 'drone']
         self.main_base_names = [
@@ -132,7 +133,7 @@ class CV2Moniter:
     async def calculate_resources(self, bot):
         mineral_ratio = min([bot.minerals / 1500, 1.0])
         vespene_ratio = min([bot.vespene / 1500, 1.0])
-        population_ratio = min([bot.supply_left / bot.supply_cap, 1.0])
+        population_ratio = min([bot.supply_left / (bot.supply_cap + 1), 1.0])
         plausible_supply = bot.supply_cap / 200 # Total available supply / 200(Max limited population)
         military_ratio = min([
             (len(bot.units(VOIDRAY))+len(bot.units(STALKER))) /
