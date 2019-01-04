@@ -1,4 +1,4 @@
-from .base_moniter import BaseMoniter
+from .base_monitor import BaseMonitor
 
 import cv2
 import numpy as np
@@ -6,16 +6,16 @@ from sc2.constants import NEXUS, PROBE, PYLON, ASSIMILATOR, GATEWAY, \
     CYBERNETICSCORE, STALKER, STARGATE, VOIDRAY, OBSERVER, ROBOTICSFACILITY
 
 
-class ChromaticMoniter(BaseMoniter):
+class ChromaticMonitor(BaseMonitor):
 
     def __init__(self, headless):
-        super().__init__(headless)
+        super().__init__(headless=headless)
         self.flipped = None
         self.worker_names = ['probe', 'scv', 'drone']
         self.main_base_names = [
-            'nexus', # Protoss
-            'hatchery' # Zerg
-            'commandcenter', # Terran
+            'nexus',  # Protoss
+            'hatchery'  # Zerg
+            'commandcenter',  # Terran
             'orbitalcommand',  # Terran(Upgraded)
             'planetaryfortress'  # Terran(Upgraded)
         ]
@@ -31,7 +31,6 @@ class ChromaticMoniter(BaseMoniter):
             STARGATE: [5, (255, 0, 0)],
             VOIDRAY: [3, (255, 100, 0)]
         }
-
 
     async def draw(self, bot):
         """
@@ -50,7 +49,6 @@ class ChromaticMoniter(BaseMoniter):
         if not self.headless:
             self.show(bot.title, self.flipped)
 
-
     async def draw_own_units(self, bot, game_data):
         """
         draw bot own units
@@ -66,7 +64,6 @@ class ChromaticMoniter(BaseMoniter):
                     -1
                 )
 
-
     async def draw_enemy_buildings(self, bot, game_data):
         for enemy_building in bot.known_enemy_structures:
             pos = enemy_building.position
@@ -74,9 +71,9 @@ class ChromaticMoniter(BaseMoniter):
                 await self.draw_enemy_main_base(game_data, pos)
             else:
                 await self.draw_anonymous_enemy_building(game_data, pos)
-        
 
-    async def draw_enemy_main_base(self, game_data, pos):
+    @staticmethod
+    async def draw_enemy_main_base(game_data, pos):
         cv2.circle(
             game_data,
             (int(pos[0]), int(pos[1])),
@@ -85,8 +82,8 @@ class ChromaticMoniter(BaseMoniter):
             -1
         )
 
-
-    async def draw_anonymous_enemy_building(self, game_data, pos):
+    @staticmethod
+    async def draw_anonymous_enemy_building(game_data, pos):
         cv2.circle(
             game_data,
             (int(pos[0]), int(pos[1])),
@@ -94,7 +91,6 @@ class ChromaticMoniter(BaseMoniter):
             (200, 50, 212),
             -1
         )
-
 
     async def draw_enemy_units(self, bot, game_data):
         for enemy_unit in bot.known_enemy_units:
@@ -105,21 +101,22 @@ class ChromaticMoniter(BaseMoniter):
                 else:
                     await self.draw_anonymous_enemy_units(game_data, pos)
 
-
-    async def draw_enemy_worker(self, game_data, pos):
+    @staticmethod
+    async def draw_enemy_worker(game_data, pos):
         cv2.circle(
-            game_data, 
-            (int(pos[0]), int(pos[1])), 
-            1, 
-            (55, 0, 155), 
+            game_data,
+            (int(pos[0]), int(pos[1])),
+            1,
+            (55, 0, 155),
             -1
         )
-    
-    async def draw_anonymous_enemy_units(self, game_data, pos):
+
+    @staticmethod
+    async def draw_anonymous_enemy_units(game_data, pos):
         cv2.circle(
-            game_data, 
-            (int(pos[0]), int(pos[1])), 
-            3, 
-            (50, 0, 215), 
+            game_data,
+            (int(pos[0]), int(pos[1])),
+            3,
+            (50, 0, 215),
             -1
         )

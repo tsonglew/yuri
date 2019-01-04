@@ -8,6 +8,7 @@ Macro actions based toy CNN StarCraft II AIbot [tech-tree](http://us.battle.net/
 
 * Install Starcraft II from [official site](https://starcraft2.com/en-us/legacy-of-the-void/)
 * Install python package manager: [pipenv](https://github.com/pypa/pipenv)
+* Download Training data and link to `yuri/train_data`
 
 ```sh
 $ pipenv install

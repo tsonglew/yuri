@@ -1,4 +1,4 @@
-from .base_moniter import BaseMoniter
+from .base_monitor import BaseMonitor
 
 import math
 
@@ -6,15 +6,14 @@ import cv2
 import numpy as np
 
 
-class MonochromeMoniter(BaseMoniter):
+class MonochromeMonitor(BaseMonitor):
 
     def __init__(self, headless):
         super().__init__(headless)
         self.ally_color = (255, 255, 255)
         self.enemy_color = (125, 125, 125)
 
-
-    async def draw_grey(self, bot):
+    async def draw(self, bot):
         game_data = np.zeros(
             (bot.game_info.map_size[1], bot.game_info.map_size[0], 3),
             np.uint8
@@ -25,11 +24,10 @@ class MonochromeMoniter(BaseMoniter):
 
         # flip horizontally to make our final fix in visual representation:
         grayed = cv2.cvtColor(game_data, cv2.COLOR_BGR2GRAY)
-        self.flip(grayed)
+        await self.flip(grayed)
 
         if not self.headless:
-            self.show(bot.title, self.fipped)
-
+            self.show(bot.title, self.flipped)
 
     async def draw_ally(self, bot, game_data):
         for unit in bot.units().ready:
@@ -37,19 +35,18 @@ class MonochromeMoniter(BaseMoniter):
             cv2.circle(
                 img=game_data,
                 center=(int(pos[0]), int(pos[1])),
-                radius=int(unit.radius*8), 
+                radius=int(unit.radius * 8),
                 color=self.ally_color,
-                thickness=math.ceil(int(unit.radius*0.5))
+                thickness=math.ceil(int(unit.radius * 0.5))
             )
 
-
     async def draw_enemy(self, bot, game_data):
-        for unit in self.known_enemy_units:
+        for unit in bot.known_enemy_units:
             pos = unit.position
             cv2.circle(
-                img=game_data, 
-                center=(int(pos[0]), int(pos[1])), 
-                radius=int(unit.radius*8), 
+                img=game_data,
+                center=(int(pos[0]), int(pos[1])),
+                radius=int(unit.radius * 8),
                 color=self.enemy_color,
-                thickness=math.ceil(int(unit.radius*0.5))
+                thickness=math.ceil(int(unit.radius * 0.5))
             )

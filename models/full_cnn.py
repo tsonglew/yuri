@@ -1,15 +1,14 @@
-import os
-import random
+from .base_model import BaseModel
 
-import numpy as np
-import keras
 from keras.models import Sequential
 from keras.layers import Dense, Dropout, Flatten, Conv2D, MaxPooling2D
-from keras.callbacks import TensorBoard
 
 
-class BasicCNNModel:
-    log_dir = "logs/stage1"
+class FullCNNModel(BaseModel):
+
+    def __init__(self):
+        BaseModel.__init__(self)
+        self.log_dir = "logs/full"
 
     def init(self):
         self.model = Sequential()
@@ -32,40 +31,3 @@ class BasicCNNModel:
         return self
     
 
-    def compile(self, lr):
-        self.model.compile(
-            loss='categorical_crossentropy', 
-            optimizer=keras.optimizers.adam(lr=lr, decay=1e-6),
-            metrics=['accuracy']
-        )
-        return self
-
-
-    def fit(self, x_train, y_train, x_test, y_test, batch_size):
-        self.model.fit(
-            x_train, y_train,
-            batch_size=batch_size,
-            validation_data=(x_test, y_test),
-            shuffle=True,
-            verbose=1, 
-            callbacks=[self.get_tensorboard()]
-        )
-        return self
-    
-
-    def get_tensorboard(self):
-        return TensorBoard(log_dir=self.log_dir)
-
-
-    def get_model(self):
-        return self.model
-
-
-    def save(self, fn):
-        self.model.save(fn)
-        return self
-
-
-    def load(self, model_path):
-        self.model.load(model_path)
-        return self

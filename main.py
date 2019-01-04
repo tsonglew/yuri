@@ -1,9 +1,10 @@
+import os
 import time
 import argparse
 import datetime
 
 from .gamelauncher import GameLauncher
-from .trainer import Trainer
+from .trainers import FullTrainer, AttackTrainer
 from .mainbot import MainBot
 from .loggers import logger
 
@@ -19,33 +20,47 @@ parser = argparse.ArgumentParser(
     description='Yuri, the StarCraft II bot'
 )
 parser.add_argument('--type')
+parser.add_argument('--model', help='model path')
+parser.add_argument('--difficulty', help='computer difficulty')
 parser.add_argument(
-    '--use_model', action='store_true',
-    help='use a trained model'
-)
-parser.add_argument(
-    '--reuse', action='store_true',
-    help='use a local model without rebuild a new one'
+    '--realtime', action='store_true',
+    help='Run the game in realtime speed'
 )
 
 cmd_args = parser.parse_args()
+game_type = cmd_args.type
+model = cmd_args.model
+realtime = cmd_args.realtime
+difficulty = cmd_args.difficulty if cmd_args.difficulty is not None else 'medium'
 
-if str(cmd_args.type) == 'game':
-    game_launcher = GameLauncher(MainBot, cmd_args.use_model, MODEL_PATH, realtime=False)
-    game_result = game_launcher.start_game()
+model_type = 'attack'
 
+if str(game_type) == 'game':
+    if model is None:
+        game_launcher = GameLauncher(MainBot, False, None, realtime=realtime)
+    else:
+        game_launcher = GameLauncher(MainBot, True, model, realtime=realtime)
+
+    train_data_tensor = list()
+    game_result = game_launcher.start_game(difficulty, train_data_tensor)
     logger.debug(f'Game Result: {game_result}')
-    logger.debug(f'Using model: {cmd_args.use_model}')
 
     if game_result == Result.Victory:
-        np.save(f'local_train/{str(int(time.time()))}.npy', 
-                np.array(game_launcher.get_train_data()))
+        np.save(
+            os.path.join(os.path.dirname(os.path.abspath(__file__)),
+                         f'{model_type}_local_train/{str(int(time.time()))}.npy'),
+            np.array(train_data_tensor))
 
     with open('logs/log.txt', 'a') as f:
         prefix = 'Model: ' if game_launcher.use_model else 'Random: '
         f.write(f'{datetime.datetime.now()}:{prefix}{game_result}\n')
 
-elif str(cmd_args.type) == 'train':
-    trainer = Trainer()
-    trainer.prepare_model(cmd_args.reuse)
-    trainer.train()
+elif str(game_type) == 'train':
+    if model_type == 'attack':
+        trainer = AttackTrainer()
+        trainer.prepare_model(model)
+        trainer.train()
+    elif model_type == 'full':
+        trainer = FullTrainer()
+        trainer.prepare_model(model)
+        trainer.train()

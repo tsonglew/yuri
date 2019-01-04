@@ -1,5 +1,6 @@
-from .model import BasicCNNModel
-from .loggers import logger
+from .base_trainer import BaseTrainer
+from ..models import FullCNNModel
+from ..loggers import logger
 
 import os
 import random
@@ -7,20 +8,17 @@ import random
 import numpy as np
 
 
-class Trainer:
+class FullTrainer(BaseTrainer):
 
     def __init__(self):
-        self.test_size = 100
-        self.batch_size = 128
-        self.learning_rate = 0.0001
-        self.hm_epochs = 100
-        self.increment = 50 
-        self.train_data_dir = os.path.join(
-            os.path.dirname(os.path.abspath(__file__)), 
-            'train_data'
-        )
-        self.model = BasicCNNModel()
+        BaseTrainer.__init__(self)
 
+        self.name = 'FullTrainer'
+        self.train_data_dir = os.path.join(
+            os.path.dirname(os.path.abspath(__file__)),
+            'full_train_data'
+        )
+        self.model = FullCNNModel()
 
     def prepare_model(self, reuse):
         """
@@ -37,24 +35,25 @@ class Trainer:
         self.model.compile(lr=self.learning_rate)
         return self
 
-
     def train(self):
-        for i in range(self.hm_epochs):
-            current = 0
-            not_maximum = True
-            all_files = os.listdir(self.train_data_dir)
-            maximum = len(all_files)
-            random.shuffle(all_files)
+        try:
+            for i in range(self.hm_epochs):
+                current = 0
+                all_files = os.listdir(self.train_data_dir)
+                maximum = len(all_files)
+                random.shuffle(all_files)
 
-            while current <= maximum:
-                origin_files = all_files[current: current+self.increment]
-                logger.debug(f'WORKING ON {current}:{current+self.increment}, EPOCH:{i}')
-                choices = self.prepare_choices(origin_files)
-                x_train, y_train, x_test, y_test = self.prepare_train_data(choices)
-                self.fit(x_train, y_train, x_test, y_test)
-                self.save("BasicCNN-5000-epochs-0.001-LR-STAGE2")
-                current += self.increment
+                while current <= maximum:
+                    origin_files = all_files[current: current + self.increment]
+                    logger.debug(f'WORKING ON {current}:{current + self.increment}, EPOCH:{i}')
+                    choices = self.prepare_choices(origin_files)
+                    x_train, y_train, x_test, y_test = self.prepare_train_data(choices)
+                    self.fit(x_train, y_train, x_test, y_test)
+                    self.save("BasicCNN-5000-epochs-0.001-LR-STAGE2")
+                    current += self.increment
 
+        except KeyboardInterrupt:
+            self.save("BasicCNN-5000-epochs-0.001-LR-STAGE2")
 
     def prepare_choices(self, origin_files) -> list:
         """
@@ -65,17 +64,16 @@ class Trainer:
         shuffled_choices = self.shuffle_choices(loaded_choices)
         return shuffled_choices
 
-
     def load_choices(self, files):
         """
         load choices from files and distinguish them with the choices made
 
-        choices struct: 
+        choices structure:
         [
             [ # all data of choice 0
                 [ # one choice of choice 0
                     choices list like [1, 0, ..., 0, 0],
-                    moniter image of shape (176, 200)
+                    monitor image of shape (176, 200)
                 ],
                 ...
             ],
@@ -99,7 +97,6 @@ class Trainer:
 
         return choices
 
-    
     def shuffle_choices(self, choices):
         """
         shuffle the images of a choice and truncate images list of all 
@@ -109,13 +106,12 @@ class Trainer:
 
         lowest_data = min(lengths)
 
-        for choice in choices:
-            random.shuffle(choice)
-            choice = choice[:lowest_data]
+        for choice, choice_d in enumerate(choices):
+            random.shuffle(choices[choice])
+            choices[choice] = choice_d[:lowest_data]
 
         self.check_data(choices)
         return choices
-
 
     def prepare_train_data(self, choices):
         """
@@ -130,10 +126,9 @@ class Trainer:
         random.shuffle(train_data)
         return self.pick_test_data(train_data)
 
-
     def pick_test_data(self, train_data):
         """
-        pick train data and test data from prepared dataset
+        pick train data and test data from prepared data set
         """
         x_train = np.array([i[1] for i in train_data[:-self.test_size]]).reshape(-1, 176, 200, 1)
         y_train = np.array([i[0] for i in train_data[:-self.test_size]])
@@ -142,25 +137,14 @@ class Trainer:
         y_test = np.array([i[0] for i in train_data[-self.test_size:]])
         return x_train, y_train, x_test, y_test
 
-
-    def check_data(self, choices):
+    @staticmethod
+    def check_data(choices):
         total_data = 0
 
         lengths = list()
         for choice, choice_data in enumerate(choices):
-            logger.debug(f'Length of {choice} is: {len(choice_data)}')
             total_data += len(choices[choice])
             lengths.append(len(choices[choice]))
 
         logger.debug(f'Total data length now is: {total_data}')
         return lengths
-
-
-    def fit(self, x_train, y_train, x_test, y_test):
-        self.model.fit(x_train, y_train, x_test, y_test, self.batch_size)
-        return self
-
-
-    def save(self, save2path):
-        self.save(save2path)
-        return self

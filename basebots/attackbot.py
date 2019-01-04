@@ -12,7 +12,7 @@ from sc2.constants import NEXUS, PROBE, PYLON, ASSIMILATOR, GATEWAY, \
 class AttackBot(sc2.BotAI, WaitBot):
 
     def __init__(self, *args, **kwargs):
-        super().__init__()
+        WaitBot.__init__(self)
 
         self.attack_choice_dict = {
             0: "No Attack!",
@@ -29,14 +29,15 @@ class AttackBot(sc2.BotAI, WaitBot):
             self.attack_known_enemy_unit
         ]
 
-    async def attack(self, moniter, use_model) -> [np.array, np.array]:
+    async def attack(self, monitor, use_model) -> [np.array, np.array]:
         """
         voidrays choose random enemy units or structures to attack; used for 
         collecting training data
         """
-        if len(self.units(VOIDRAY).idle) + len(self.units(STALKER).idle) > 0:
+        if len(self.units(VOIDRAY).idle) > 0:
+
             if self.minute > self.do_something_after:
-                flipped = moniter.get_flipped()
+                flipped = monitor.get_flipped()
                 if use_model:
                     choice = await self.predict_attack_choice(flipped)
                 else:
@@ -50,21 +51,18 @@ class AttackBot(sc2.BotAI, WaitBot):
                 # Training data consits of two tensors, which are random choice
                 # array(1*4) and game_data map(176*200*3)
                 return [choice_array, flipped]
-        return None
-    
+            return None
 
     async def predict_attack_choice(self, flipped) -> int:
         prediction = self.model.predict([flipped.reshape([-1, 176, 200, 3])])
         choice = np.argmax(prediction[0])
-        logger.debug('Attack Choice #{choice}:{self.attack_choice_dict[choice]}')
+        logger.debug(f'Attack Choice #{choice}:{self.attack_choice_dict[choice]}')
         return choice
 
-    
     async def no_attack(self) -> None:
-        wait = random.randrange(7,100)/100
+        wait = random.randrange(7, 100) / 100
         self.do_something_after = self.minute + wait
         return None
-
 
     async def defend_nexus(self) -> sc2.unit:
         if len(self.known_enemy_units) > 0:
@@ -73,24 +71,20 @@ class AttackBot(sc2.BotAI, WaitBot):
                 target = self.known_enemy_units.closest_to(random.choice(own_nexuses))
                 await self.attack_unit(target)
 
-
     async def attack_known_enemy_unit(self):
         if len(self.known_enemy_units) > 0:
             target = random.choice(self.known_enemy_units)
             await self.attack_unit(target)
-
 
     async def attack_known_enemy_structure(self) -> sc2.unit:
         if len(self.known_enemy_structures) > 0:
             target = random.choice(self.known_enemy_structures)
             await self.attack_unit(target)
 
-
     async def attack_enemy_start(self) -> sc2.unit:
         target = self.enemy_start_locations[0]
         await self.attack_unit(target)
 
-    
     async def attack_unit(self, target):
         if target is not None:
             for offensive_type in (STALKER, VOIDRAY, ZEALOT):

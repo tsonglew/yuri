@@ -1,8 +1,6 @@
 from .utils import random_location_variance
 from ..loggers import logger
 
-import math
-
 import sc2
 from sc2.constants import NEXUS, PROBE, PYLON, ASSIMILATOR, GATEWAY, \
     CYBERNETICSCORE, STALKER, STARGATE, VOIDRAY, OBSERVER, ROBOTICSFACILITY
@@ -16,7 +14,6 @@ PROBE_SCOUT_MAX_NUM = 1
 class ScoutBot(sc2.BotAI):
 
     def __init__(self):
-        super().__init__()
 
         # sount and expand
         self.expand_distance_location = dict()
@@ -50,7 +47,6 @@ class ScoutBot(sc2.BotAI):
         elif unit_type == OBSERVER:
             await self.ob_scout(idle_candidates[:OBSERVER_SCOUT_MAX_NUM])
 
-    
     async def calculate_epansion_distances(self):
         for el in self.expansion_locations:
             distance_to_enemy_start = el.distance_to(self.enemy_start_locations[0])
@@ -58,7 +54,6 @@ class ScoutBot(sc2.BotAI):
 
         self.expand_location_distance = {v: k for k, v in self.expand_distance_location.items()}
         self.ordered_expand_distances = sorted(k for k in self.expand_distance_location.keys())
-
 
     async def update_scouts_and_spots(self):
         """
@@ -69,7 +64,6 @@ class ScoutBot(sc2.BotAI):
         for scout in scouts_and_spots_keys:
             if scout not in existing_ids:
                 del self.scouts_and_spots[scout]
-
 
     async def get_unit_type_and_num_limit(self) -> (sc2.constants, bool, sc2.unit):
         assign_scout = True
@@ -85,7 +79,6 @@ class ScoutBot(sc2.BotAI):
             unit_type = OBSERVER
 
         return (unit_type, assign_scout, scouting_probe)
-
 
     async def ob_scout(self, obs):
         for ob in obs:
