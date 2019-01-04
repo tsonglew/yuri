@@ -1,6 +1,6 @@
 # Yuri
 
-Macro actions based toy CNN StarCraft II AIbot [tech-tree](http://us.battle.net/sc2/en/game/race/terran/techtree/)
+Macro actions based toy CNN StarCraft II AIbot
 
 ## Getting Started
 
@@ -8,7 +8,9 @@ Macro actions based toy CNN StarCraft II AIbot [tech-tree](http://us.battle.net/
 
 * Install Starcraft II from [official site](https://starcraft2.com/en-us/legacy-of-the-void/)
 * Install python package manager: [pipenv](https://github.com/pypa/pipenv)
-* Download Training data and link to `yuri/train_data`
+* Download Training data for attack actions and link to `yuri/attack_train`
+* Download Training data for all actions and link to `yuri/train_data`
+* Create directory to save random victory data
 
 ```sh
 $ pipenv install
@@ -33,13 +35,13 @@ $ pylint *.py
 ### Run game
 
 ```sh
-$ pipenv run python -m yuri.main --type game [--use_model]
+$ pipenv run python -m yuri.main --type game [--model <model path>] [--difficulty [easy | medium | hard]]
 ```
 
 ### Train model
 
 ```sh
-$ pipenv run python -m yuri.train --type train [--reuse]
+$ pipenv run python -m yuri.train --type train
 ```
 
 ## Built With
