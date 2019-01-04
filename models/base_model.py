@@ -1,6 +1,7 @@
 from ..loggers import logger
 
 import keras
+from keras.models import load_model
 from keras.callbacks import TensorBoard
 
 
@@ -41,5 +42,5 @@ class BaseModel:
         return self
 
     def load(self, model_path):
-        self.model.load(model_path)
+        self.model = load_model(model_path)
         return self

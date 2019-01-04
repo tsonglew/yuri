@@ -27,7 +27,7 @@ class FullTrainer(BaseTrainer):
         if reuse:
             model_path = os.path.join(
                 os.path.dirname(os.path.abspath(__file__)),
-                f'BasicCNN-{hm_epochs}-epochs-{learning_rate}-LR-STAGE2'
+                f'BasicCNN-{self.hm_epochs}-epochs-{self.learning_rate}-LR-STAGE2'
             )
             self.load(model_path)
         else:

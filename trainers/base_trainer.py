@@ -5,7 +5,7 @@ class BaseTrainer:
         self.batch_size = 128
         self.learning_rate = 0.0001
         self.hm_epochs = 100
-        self.increment = 50
+        self.increment = 200
         self.name = 'BaseTrainer'
 
     def prepare_model(self, model):
@@ -25,4 +25,8 @@ class BaseTrainer:
 
     def save(self, save2path):
         self.model.save(save2path)
+        return self
+
+    def load(self, model):
+        self.model.load(model)
         return self
