@@ -38,11 +38,16 @@ $ pylint *.py
 $ pipenv run python -m yuri.main --type game [--model <model path>] [--difficulty [easy | medium | hard]]
 ```
 
+* `--model` gives the trained model to join the game 
+* `--difficulty` defines the computer difficulty
+
 ### Train model
 
 ```sh
-$ pipenv run python -m yuri.train --type train
+$ pipenv run python -m yuri.train --type train [--model <model path>]
 ```
+
+* `--model` gives a model to continue training on
 
 ## Built With
 
