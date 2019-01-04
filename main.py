@@ -11,9 +11,19 @@ from .loggers import logger
 import numpy as np
 from sc2 import Result
 
+import tensorflow as tf
+import keras.backend.tensorflow_backend as backend
+
 
 MODEL_PATH = 'BasicCNN-10-epochs-0.0001-LR-STAGE1'
 
+
+def get_session(gpu_fraction=0.85):
+    gpu_options = tf.GPUOptions(per_process_gpu_memory_fraction=gpu_fraction)
+    return tf.Session(config=tf.ConfigProto(gpu_options=gpu_options))
+
+
+backend.set_session(get_session())
 
 parser = argparse.ArgumentParser(
     prog='main.py',

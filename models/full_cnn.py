@@ -29,5 +29,3 @@ class FullCNNModel(BaseModel):
         self.model.add(Dropout(0.5))
         self.model.add(Dense(14, activation='softmax'))
         return self
-    
-
