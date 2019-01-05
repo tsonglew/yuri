@@ -1,5 +1,5 @@
 from .base_trainer import BaseTrainer
-from ..models import BasicCNN
+from ..models import AttackCNNModel
 from ..loggers import logger
 
 import os
@@ -18,7 +18,7 @@ class AttackTrainer(BaseTrainer):
             os.path.dirname(os.path.dirname(os.path.abspath(__file__))),
             'attack_train'
         )
-        self.model = BasicCNN()
+        self.model = AttackCNNModel()
 
     def train(self):
         for i in range(self.hm_epochs):
@@ -38,7 +38,7 @@ class AttackTrainer(BaseTrainer):
                     all_files[current:current + self.increment],
                     self.test_size
                 )
-                self.model.fit(x_train, y_train, x_test, y_test, self.batch_size)
+                self.fit(x_train, y_train, x_test, y_test)
                 save_path = os.path.join(
                     os.path.dirname(os.path.abspath(__file__)),
                     f'AttackTrainer-{self.hm_epochs}-epochs-{self.learning_rate}'

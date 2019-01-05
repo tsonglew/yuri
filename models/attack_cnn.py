@@ -4,7 +4,7 @@ from keras.models import Sequential
 from keras.layers import Dense, Dropout, Flatten, Conv2D, MaxPooling2D
 
 
-class BasicCNN(BaseModel):
+class AttackCNNModel(BaseModel):
 
     def __init__(self):
         BaseModel.__init__(self)

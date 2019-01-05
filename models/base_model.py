@@ -19,13 +19,12 @@ class BaseModel:
         )
         return self
 
-    def fit(self, x_train, y_train, x_test, y_test, batch_size):
+    def fit(self, x_train, y_train, x_test, y_test, epochs, batch_size):
         self.model.fit(
             x_train, y_train,
+            epochs=epochs,
             batch_size=batch_size,
             validation_data=(x_test, y_test),
-            shuffle=True,
-            verbose=1,
             callbacks=[self.get_tensorboard()]
         )
         return self

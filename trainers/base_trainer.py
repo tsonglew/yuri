@@ -5,6 +5,7 @@ class BaseTrainer:
         self.batch_size = 128
         self.learning_rate = 0.0001
         self.hm_epochs = 100
+        self.epochs = 1
         self.increment = 200
         self.name = 'BaseTrainer'
 
@@ -20,7 +21,7 @@ class BaseTrainer:
         return self
 
     def fit(self, x_train, y_train, x_test, y_test):
-        self.model.fit(x_train, y_train, x_test, y_test, self.batch_size)
+        self.model.fit(x_train, y_train, x_test, y_test, self.epochs, self.batch_size)
         return self
 
     def save(self, save2path):
