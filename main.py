@@ -32,6 +32,7 @@ parser = argparse.ArgumentParser(
 parser.add_argument('--type')
 parser.add_argument('--model', help='model path')
 parser.add_argument('--difficulty', help='computer difficulty')
+parser.add_argument('--race', help='computer race')
 parser.add_argument(
     '--realtime', action='store_true',
     help='Run the game in realtime speed'
@@ -42,8 +43,11 @@ game_type = cmd_args.type
 model = cmd_args.model
 realtime = cmd_args.realtime
 difficulty = cmd_args.difficulty if cmd_args.difficulty is not None else 'medium'
+race = cmd_args.race if cmd_args.race is not None else 'zerg'
 
 model_type = 'attack'
+
+log_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'log.txt')
 
 if str(game_type) == 'game':
     if model is None:
@@ -52,7 +56,7 @@ if str(game_type) == 'game':
         game_launcher = GameLauncher(MainBot, True, model, realtime=realtime)
 
     train_data_tensor = list()
-    game_result = game_launcher.start_game(difficulty, train_data_tensor)
+    game_result = game_launcher.start_game(difficulty, race, train_data_tensor)
     logger.debug(f'Game Result: {game_result}')
 
     if game_result == Result.Victory:
@@ -61,7 +65,7 @@ if str(game_type) == 'game':
                          f'{model_type}_local_train/{str(int(time.time()))}.npy'),
             np.array(train_data_tensor))
 
-    with open('logs/log.txt', 'a') as f:
+    with open(log_path, 'a') as f:
         prefix = 'Model: ' if game_launcher.use_model else 'Random: '
         f.write(f'{datetime.datetime.now()}:{prefix}{game_result}\n')
 

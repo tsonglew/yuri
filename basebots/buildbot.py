@@ -41,10 +41,10 @@ class BuildBot(sc2.BotAI):
             vespenes = self.state.vespene_geyser.closer_than(15.0, nexus)
             for vespene in vespenes:
                 if not self.can_afford(ASSIMILATOR):
-                    break
+                    return
                 worker = self.select_build_worker(vespene.position)
                 if worker is None:
-                    break
+                    return
                 if not self.units(ASSIMILATOR).closer_than(1.0, vespene).exists:
                     logger.debug('build assimilator')
                     await self.do(worker.build(ASSIMILATOR, vespene))

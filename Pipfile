@@ -10,6 +10,7 @@ opencv-python = "*"
 keras = "*"
 tensorflow-gpu = "*"
 loguru = "*"
+pyyaml = "*"
 
 [dev-packages]
 "autopep8" = "*"

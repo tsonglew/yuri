@@ -14,24 +14,17 @@ class AttackBot(sc2.BotAI, WaitBot):
     def __init__(self, *args, **kwargs):
         WaitBot.__init__(self)
 
-        self.attack_choice_dict = {
-            0: "No Attack!",
-            1: "Attack close to our nexus!",
-            2: "Attack Enemy Structure!",
-            3: "Attack Eneemy Start!"
-        }
-
         self.choice_funcs = [
-            self.no_attack,
-            self.defend_nexus,
-            self.attack_known_enemy_structure,
-            self.attack_enemy_start,
-            self.attack_known_enemy_unit
+            (self.no_attack, 'no_attack'),
+            (self.defend_nexus, 'defend nexus'),
+            (self.attack_known_enemy_structure, 'attack enemy structure'),
+            (self.attack_enemy_start, 'attack enemy start'),
+            (self.attack_known_enemy_unit, 'attack known enemy unit')
         ]
 
     async def attack(self, monitor, use_model) -> [np.array, np.array]:
         """
-        voidrays choose random enemy units or structures to attack; used for 
+        voidrays choose random enemy units or structures to attack; used for
         collecting training data
         """
         if len(self.units(VOIDRAY).idle) > 0:
@@ -43,7 +36,7 @@ class AttackBot(sc2.BotAI, WaitBot):
                 else:
                     choice = random.randrange(0, 4)
 
-                target = await self.choice_funcs[choice]()
+                target = await self.choice_funcs[choice][0]()
                 await self.attack_unit(target)
 
                 choice_array = np.zeros(4)
@@ -56,7 +49,7 @@ class AttackBot(sc2.BotAI, WaitBot):
     async def predict_attack_choice(self, flipped) -> int:
         prediction = self.model.predict([flipped.reshape([-1, 176, 200, 3])])
         choice = np.argmax(prediction[0])
-        logger.debug(f'Attack Choice #{choice}:{self.attack_choice_dict[choice]}')
+        logger.debug(f'Attack Choice #{choice}:{self.choice_funcs[choice][1]}')
         return choice
 
     async def no_attack(self) -> None:
@@ -76,17 +69,17 @@ class AttackBot(sc2.BotAI, WaitBot):
             target = random.choice(self.known_enemy_units)
             await self.attack_unit(target)
 
-    async def attack_known_enemy_structure(self) -> sc2.unit:
+    async def attack_known_enemy_structure(self):
         if len(self.known_enemy_structures) > 0:
             target = random.choice(self.known_enemy_structures)
             await self.attack_unit(target)
 
-    async def attack_enemy_start(self) -> sc2.unit:
+    async def attack_enemy_start(self):
         target = self.enemy_start_locations[0]
         await self.attack_unit(target)
 
     async def attack_unit(self, target):
         if target is not None:
             for offensive_type in (STALKER, VOIDRAY, ZEALOT):
-                for unit in self.units(offensive_type).idle:
+                for unit in self.units(offensive_type):
                     await self.do(unit.attack(target))
