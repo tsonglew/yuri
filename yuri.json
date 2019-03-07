@@ -1,6 +1,6 @@
 {
     "train":{
-        "model": "BasicCNN-10-epochs-0.0001-LR-STAGE1",
+        "train_data_dir": "attack_train",
         "model_type": "attack",
         "test_size": 100,
         "batch_size": 128,

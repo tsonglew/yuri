@@ -1,3 +1,6 @@
+import os
+
+
 class BaseTrainer:
 
     def __init__(self, config_json):
@@ -9,6 +12,10 @@ class BaseTrainer:
         self.hm_epochs = config_json.get('hm_epochs')
         self.epochs = config_json.get('epochs')
         self.increment = config_json.get('increment')
+        self.train_data_dir = os.path.join(
+            os.path.dirname(os.path.dirname(__file__)), 
+            config_json.get('train_data_dir')
+        )
 
     def prepare_model(self, model):
         """

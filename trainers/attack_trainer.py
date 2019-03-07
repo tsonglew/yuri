@@ -14,10 +14,6 @@ class AttackTrainer(BaseTrainer):
     def __init__(self, config_json):
         BaseTrainer.__init__(self, config_json)
         self.name = 'attackTrainer'
-        self.train_data_dir = os.path.join(
-            os.path.dirname(os.path.dirname(__file__)),
-            'attack_train'
-        )
         self.model = AttackCNNModel()
 
     def train(self):
