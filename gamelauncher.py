@@ -8,9 +8,9 @@ from sc2.player import Bot, Computer
 
 class GameLauncher:
 
-    def __init__(self, bot, use_model, model_path, realtime):
-        logger.debug('Game Launcher inited')
-        self.map = 'AbyssalReefLE'
+    def __init__(self, bot, use_model, model_path, map_name, realtime):
+        logger.debug(f'Game Launcher inited in Map {map_name}')
+        self.map = map_name
         self.bot = bot
         self.use_model = use_model
         self.model_path = model_path
@@ -23,10 +23,11 @@ class GameLauncher:
         self.race_dict = {
             'zerg': Race.Zerg,
             'terran': Race.Terran,
-            'Protoss': Race.Protoss
+            'protoss': Race.Protoss
         }
 
     def create_bot(self, bot_title, train_data_tensor):
+        logger.debug(f'Create bot with model {self.model_path}')
         return Bot(
             Race.Protoss,
             self.bot(train_data_tensor, self.use_model, bot_title, self.model_path)

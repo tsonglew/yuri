@@ -10,8 +10,8 @@ import numpy as np
 
 class FullTrainer(BaseTrainer):
 
-    def __init__(self):
-        BaseTrainer.__init__(self)
+    def __init__(self, config_json):
+        BaseTrainer.__init__(self, config_json)
 
         self.name = 'FullTrainer'
         self.train_data_dir = os.path.join(
@@ -19,21 +19,6 @@ class FullTrainer(BaseTrainer):
             'full_train_data'
         )
         self.model = FullCNNModel()
-
-    def prepare_model(self, reuse):
-        """
-        create a basic cnn model or reload a model from path if reuse
-        """
-        if reuse:
-            model_path = os.path.join(
-                os.path.dirname(os.path.abspath(__file__)),
-                f'BasicCNN-{self.hm_epochs}-epochs-{self.learning_rate}-LR-STAGE2'
-            )
-            self.load(model_path)
-        else:
-            self.model.init()
-        self.model.compile(lr=self.learning_rate)
-        return self
 
     def train(self):
         try:

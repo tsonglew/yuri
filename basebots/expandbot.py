@@ -14,7 +14,7 @@ class ExpandBot:
         build more nuxuses if affordable
         """
         try:
-            if self.units(NEXUS).amount < self.minute / 2 and self.can_afford(NEXUS):
+            if self.units(NEXUS).amount < self.minute and self.can_afford(NEXUS):
                 await self.expand_now()
         except Exception as e:
             logger.error(e)

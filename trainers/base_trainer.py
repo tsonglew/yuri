@@ -1,13 +1,14 @@
 class BaseTrainer:
 
-    def __init__(self):
-        self.test_size = 100
-        self.batch_size = 128
-        self.learning_rate = 0.0001
-        self.hm_epochs = 100
-        self.epochs = 1
-        self.increment = 200
+    def __init__(self, config_json):
         self.name = 'BaseTrainer'
+
+        self.test_size = config_json.get('test_size')
+        self.batch_size = config_json.get('batch_size')
+        self.learning_rate = config_json.get('learning_rate')
+        self.hm_epochs = config_json.get('hm_epochs')
+        self.epochs = config_json.get('epochs')
+        self.increment = config_json.get('increment')
 
     def prepare_model(self, model):
         """

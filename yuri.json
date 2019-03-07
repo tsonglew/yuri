@@ -1,0 +1,21 @@
+{
+    "train":{
+        "model": "BasicCNN-10-epochs-0.0001-LR-STAGE1",
+        "model_type": "attack",
+        "test_size": 100,
+        "batch_size": 128,
+        "learning_rate": 0.0001,
+        "hm_epochs": 100,
+        "epochs": 1,
+        "increment": 200
+    },
+    "game":{
+        "logfn": "log.txt",
+        "map": "AbyssalReefLE",
+        "model_type": "attack",
+        "model": "game_model",
+        "difficulty": "hard",
+        "race": "zerg",
+        "realtime": false
+    }
+}

@@ -8,6 +8,8 @@ __pycache__/
 
 # Training data
 train_data/
+attack_local_train/
+full_local_train/
 
 # Log file
 logs/
@@ -15,3 +17,6 @@ log.txt
 
 # staged models
 BasicCNN*
+AttackCNN*
+AttackTrainer*
+

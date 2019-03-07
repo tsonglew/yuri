@@ -53,7 +53,7 @@ class AttackBot(sc2.BotAI, WaitBot):
         return choice
 
     async def no_attack(self) -> None:
-        wait = random.randrange(7, 100) / 100
+        wait = random.randrange(10, 50) / 100
         self.do_something_after = self.minute + wait
         return None
 

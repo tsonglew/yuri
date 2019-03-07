@@ -11,11 +11,11 @@ import numpy as np
 
 class AttackTrainer(BaseTrainer):
 
-    def __init__(self):
-        BaseTrainer.__init__(self)
+    def __init__(self, config_json):
+        BaseTrainer.__init__(self, config_json)
         self.name = 'attackTrainer'
         self.train_data_dir = os.path.join(
-            os.path.dirname(os.path.dirname(os.path.abspath(__file__))),
+            os.path.dirname(os.path.dirname(__file__)),
             'attack_train'
         )
         self.model = AttackCNNModel()
@@ -40,7 +40,7 @@ class AttackTrainer(BaseTrainer):
                 )
                 self.fit(x_train, y_train, x_test, y_test)
                 save_path = os.path.join(
-                    os.path.dirname(os.path.abspath(__file__)),
+                    os.path.dirname(__file__),
                     f'AttackTrainer-{self.hm_epochs}-epochs-{self.learning_rate}'
                 )
                 self.model.save(save_path)
