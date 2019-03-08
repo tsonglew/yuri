@@ -16,6 +16,7 @@ class ScoutBot(sc2.BotAI):
     def __init__(self):
 
         # sount and expand
+        self.scout_round = 1 
         self.expand_distance_location = dict()
         self.scouts_and_spots = dict()
         self.expand_dis = dict()
@@ -24,6 +25,8 @@ class ScoutBot(sc2.BotAI):
         """
         scout with probes or observers
         """
+        if self.scout_round * 7 > self.minute:
+            return
         await self.calculate_epansion_distances()
         await self.update_scouts_and_spots()
         (unit_type, assign, scouting_probe) = await self.get_unit_type_and_num_limit()
@@ -46,6 +49,8 @@ class ScoutBot(sc2.BotAI):
             await self.ob_scout(idle_candidates[:PROBE_SCOUT_MAX_NUM])
         elif unit_type == OBSERVER:
             await self.ob_scout(idle_candidates[:OBSERVER_SCOUT_MAX_NUM])
+        logger.debug(f'A scout has been sent, scout round: {self.scout_round}')
+        self.scout_round += 1
 
     async def calculate_epansion_distances(self):
         for el in self.expansion_locations:

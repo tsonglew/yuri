@@ -74,13 +74,14 @@ class FullChoiceBot(AttackBot, BuildBot, ExpandBot, ScoutBot, DataBot):
         self.do_something_after = self.minute + wait
 
 
-class AttackChoiceBot(AttackBot, BuildBot, ExpandBot, DataBot):
+class AttackChoiceBot(AttackBot, BuildBot, ExpandBot, DataBot, ScoutBot):
 
     def __init__(self):
         AttackBot.__init__(self)
         BuildBot.__init__(self)
         ExpandBot.__init__(self)
         DataBot.__init__(self)
+        ScoutBot.__init__(self)
 
     async def on_step(self, iteration):
         """
@@ -96,5 +97,6 @@ class AttackChoiceBot(AttackBot, BuildBot, ExpandBot, DataBot):
         await self.expand()
         await self.build_offensive_force_building()
         await self.build_offensive_force()
+        await self.scout()
 
         return await self.attack(self.monitor, self.use_model)

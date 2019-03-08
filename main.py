@@ -65,7 +65,7 @@ if str(game_type) == 'game':
     log_path = os.path.join(os.path.dirname(__file__), logfile_name)
     with open(log_path, 'a') as f:
         prefix = 'Model: ' if game_launcher.use_model else 'Random: '
-        f.write(f'{datetime.datetime.now()}:{prefix}{game_result}\n')
+        f.write(f'{datetime.datetime.now()}:{prefix} Against {difficulty} {race} {game_result}\n')
 
 elif str(game_type) == 'train':
 
