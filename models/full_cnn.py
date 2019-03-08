@@ -1,7 +1,7 @@
 from .base_model import BaseModel
 
 from keras.models import Sequential
-from keras.layers import Dense, Dropout, Flatten, Conv2D, MaxPooling2D
+from keras.layers import Dense, Dropout, Flatten, Conv2D, MaxPooling2D, BatchNormalization
 
 
 class FullCNNModel(BaseModel):
@@ -16,10 +16,12 @@ class FullCNNModel(BaseModel):
         self.model.add(Conv2D(32, (3, 3), activation='relu'))
         self.model.add(MaxPooling2D(pool_size=(2, 2)))
         self.model.add(Dropout(0.2))
+        self.model.add(BatchNormalization())
         self.model.add(Conv2D(64, (3, 3), padding='same', activation='relu'))
         self.model.add(Conv2D(64, (3, 3), activation='relu'))
         self.model.add(MaxPooling2D(pool_size=(2, 2)))
         self.model.add(Dropout(0.2))
+        self.model.add(BatchNormalization())
         self.model.add(Conv2D(128, (3, 3), padding='same', activation='relu'))
         self.model.add(Conv2D(128, (3, 3), activation='relu'))
         self.model.add(MaxPooling2D(pool_size=(2, 2)))

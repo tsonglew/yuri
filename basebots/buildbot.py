@@ -16,7 +16,7 @@ class BuildBot(sc2.BotAI):
 
     async def build_worker(self):
         probe_nums = len(self.units(PROBE))
-        if len(self.units(NEXUS)) * 16 > probe_nums and probe_nums < self.workers_max:
+        if len(self.units(NEXUS)) * 16 > probe_nums and probe_nums + self.already_pending(PROBE) < self.workers_max:
             for nexus in self.units(NEXUS).ready.noqueue:
                 if self.can_afford(PROBE):
                     logger.debug('called build_worker')
