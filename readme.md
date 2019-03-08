@@ -1,6 +1,10 @@
 # Yuri
 
-Macro actions based toy DQN StarCraft II AIbot
+Macro actions based toy DQN StarCraft II AIbot, which beats Hard(Level 5) builtin bot with 95% win rate 
+
+## Architecture of DQN 
+
+![](./images/yuri-arc.png)
 
 ## Getting Started
 
@@ -9,7 +13,6 @@ Macro actions based toy DQN StarCraft II AIbot
 * Install Starcraft II from [official site](https://starcraft2.com/en-us/legacy-of-the-void/)
 * Install python package manager: [pipenv](https://github.com/pypa/pipenv)
 * Download Training data for attack actions and link to `yuri/attack_train`
-* Download Training data for all actions and link to `yuri/train_data`
 * Create directory to save random victory data
 
 ```sh
@@ -45,7 +48,7 @@ $ pipenv run python -m yuri.main --type game
 ### Train model
 
 ```sh
-$ pipenv run python -m yuri.train --type train
+$ pipenv run python -m yuri.main --type train
 ```
 
 ## Built With
