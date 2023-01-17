@@ -2,6 +2,8 @@
 
 Macro actions based toy DQN StarCraft II AIbot, which beats Hard(Level 5) builtin bot with 95% win rate 
 
+![arc](images/yuri-arc.png)
+
 ## Getting Started
 
 ### Prerequisites
