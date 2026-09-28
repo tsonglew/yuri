@@ -1,0 +1,70 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="Yuri：可扩展的星际争霸 II 决策实验室。调整战场状态，观察规则决策，回放真实 Laya 模型记录。">
+  <meta name="theme-color" content="#101714">
+  <title>Yuri — 决策实验室</title>
+  <link rel="icon" href="./favicon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="./style.css">
+</head>
+<body>
+  <header class="header"><a class="brand" href="./"><span class="brand-mark">Y</span> YURI <span class="version">LAB / 02</span></a><nav aria-label="主导航"><a class="active" href="./">决策实验室</a><a href="./docs.html">开发文档</a><a href="https://github.com/tsonglew/yuri">GitHub ↗</a></nav></header>
+  <main>
+    <section class="intro"><div><p class="eyebrow">STARCRAFT II · MACRO DECISION LAB</p><h1>看见每一次决策。</h1><p>改变局面，观察策略如何选择下一步。</p></div><span class="status"><i></i> 交互沙盘 / 非真实对局</span></section>
+    <section class="lab" aria-label="交互决策演示">
+      <aside class="controls panel">
+        <div class="section-title"><span>01 / 局面输入</span><button class="text-button" id="reset">重置</button></div>
+        <label for="scenario">载入场景</label>
+        <select id="scenario"><option value="advantage">优势推进</option><option value="defense">基地告急</option><option value="retreat">残血撤退</option><option value="scout">视野过期</option><option value="opening">开局集结</option></select>
+        <div class="sliders">
+          <label for="army">己方兵力 <output id="army-value" for="army">32</output></label><input id="army" type="range" min="0" max="100" value="32" step="1">
+          <label for="enemy">已知敌军兵力 <output id="enemy-value" for="enemy">18</output></label><input id="enemy" type="range" min="0" max="100" value="18" step="1">
+          <p class="input-hint">兵力以人口计；已知敌军不等于敌方总兵力。</p>
+          <label for="health">部队健康 <output id="health-value" for="health">90%</output></label><input id="health" type="range" min="0" max="100" value="90" step="1">
+          <label for="threat">基地威胁 <output id="threat-value" for="threat">15%</output></label><input id="threat" type="range" min="0" max="100" value="15" step="1">
+          <label for="intel">情报年龄 <output id="intel-value" for="intel">12 秒</output></label><input id="intel" type="range" min="0" max="120" value="12" step="1">
+        </div>
+        <div class="input-footer"><span class="tiny-square"></span> 拖动参数，即时更新规则结果</div>
+      </aside>
+      <div class="battle panel">
+        <div class="section-title"><span>02 / 战术视图</span><span class="muted">示意地图 · 非游戏画面</span></div>
+        <div class="map-wrap">
+          <svg id="battlefield" viewBox="0 0 640 440" role="img" aria-labelledby="map-title map-description">
+            <title id="map-title">战场决策示意图</title><desc id="map-description">绿色为己方，橙色为敌方；虚线展示当前动作方向。</desc>
+            <defs><pattern id="grid" width="32" height="32" patternUnits="userSpaceOnUse"><path d="M 32 0 L 0 0 0 32" fill="none" stroke="#dbe6d7" stroke-width=".65"/></pattern><marker id="arrow" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0 0 L10 5 L0 10" fill="#126c4e"/></marker></defs>
+            <rect width="640" height="440" fill="#f3f6eb"/><rect width="640" height="440" fill="url(#grid)"/>
+            <path d="M0 300L125 260 205 285 290 180 420 190 510 90 640 130" stroke="#e3e9d9" stroke-width="85" fill="none"/>
+            <path d="M0 300L125 260 205 285 290 180 420 190 510 90 640 130" stroke="#fafbf5" stroke-width="2" stroke-dasharray="5 7" fill="none"/>
+            <g fill="#d8dfce"><path d="M270 60l60-25 45 35-15 60-65-5z"/><path d="M320 330l80-25 44 46-42 48-70-18z"/><path d="M50 55l50-15 20 40-30 35-40-20z"/></g>
+            <circle id="threat-ring" cx="110" cy="335" r="70" fill="#d46c4920" stroke="#c36746" stroke-dasharray="5 7"/>
+            <g transform="translate(110 335)"><circle r="39" fill="#126c4e10" stroke="#126c4e50"/><path d="M0-26L23 0 0 26-23 0z" fill="#126c4e"/><path d="M0-14L12 0 0 14-12 0z" fill="#c8edb9"/></g>
+            <text x="110" y="397" text-anchor="middle" class="map-label">己方基地</text>
+            <g transform="translate(530 100)"><circle r="38" fill="#ce674b10" stroke="#ce674b50"/><path d="M-19-19H19V19H-19z" fill="#bd6045"/><path d="M-8-8H8V8H-8z" fill="#f9d9bf"/></g>
+            <text x="530" y="44" text-anchor="middle" class="map-label">敌方区域</text>
+            <path id="route" d="M210 275Q330 130 490 115" fill="none" stroke="#126c4e" stroke-width="3" stroke-dasharray="8 7" marker-end="url(#arrow)"/>
+            <g id="allies"></g><g id="enemies"></g>
+            <g transform="translate(28 415)"><circle r="4" fill="#126c4e"/><text x="12" y="5" class="map-small">己方</text><circle cx="73" r="4" fill="#bd6045"/><text x="85" y="5" class="map-small">已知敌军</text></g>
+            <text x="609" y="415" text-anchor="end" class="map-small">Y / SECTOR 01</text>
+          </svg>
+          <div class="map-caption"><span id="map-action">推进至敌方区域</span><span id="map-ratio">兵力比 1.78 : 1</span></div>
+        </div>
+        <div class="flow" aria-label="决策流程"><span><b>局面</b><small>结构化状态</small></span><em>→</em><span><b id="flow-policy">规则策略</b><small id="flow-detail">优先级判断</small></span><em>→</em><span><b>动作</b><small>合法性检查</small></span></div>
+      </div>
+      <aside class="decision panel">
+        <div class="section-title"><span>03 / 决策输出</span><span id="source-badge" class="badge">RULES</span></div>
+        <p class="eyebrow" id="decision-kicker">当前建议</p><h2 id="decision-action" aria-live="polite">进攻</h2><p id="decision-reason" class="reason"></p>
+        <dl class="decision-meta"><div><dt>请求策略</dt><dd id="requested">规则基线</dd></div><div><dt>实际执行</dt><dd id="executed">规则基线</dd></div><div><dt>模型置信度</dt><dd id="confidence">不适用</dd></div><div><dt>决策耗时</dt><dd id="latency">—</dd></div></dl>
+        <p id="fallback" class="notice" hidden></p>
+        <div class="priority"><p class="eyebrow">规则优先级</p><ol id="rule-list"><li data-action="hold">无兵力 → 集结</li><li data-action="retreat">健康 &lt; 35% → 撤退</li><li data-action="defend">威胁 ≥ 60% → 防守</li><li data-action="scout">情报 ≥ 45 秒 → 侦察</li><li data-action="attack">兵力 ≥ 12 且优势 ≥ 1.3 倍 → 进攻</li><li data-action="hold">其他 → 集结</li></ol></div>
+        <button id="export" class="button secondary">导出当前决策 ↓</button>
+      </aside>
+    </section>
+    <section class="replay panel"><div><p class="eyebrow">MODEL REPLAY</p><h2>把真实模型决策带进来。</h2><p id="replay-description">导入 Python 导出的 JSON / JSONL，查看 Laya 选择、置信度与规则回退。官网不运行模型。</p></div><div class="replay-controls"><label for="replay-file" class="button primary">导入决策记录 ↑</label><input id="replay-file" type="file" accept=".json,.jsonl" class="file-input"><button id="exit-replay" class="button secondary" hidden>返回规则沙盘</button></div><p id="file-status" role="status"></p><div id="timeline" hidden><button id="previous" class="button secondary" aria-label="上一条决策">←</button><input id="frame" type="range" min="0" max="0" value="0" aria-label="决策记录序号"><span id="frame-label"></span><button id="next" class="button secondary" aria-label="下一条决策">→</button></div></section>
+    <section class="about"><div><p class="eyebrow">ONE CONTRACT. MORE POLICIES.</p><h2>策略可以更换，实验可以延续。</h2></div><div><p>Yuri 将战场状态、决策策略和游戏执行拆开。规则建立可解释的基线；Laya 探索语义决策；后续策略沿用相同协议与回放格式。</p><a href="./docs.html">阅读架构与开发路线 →</a></div></section>
+  </main>
+  <footer><span>YURI · 开源决策实验室</span><span>规则已可演示 · Laya 接入待实战评估</span><a href="https://github.com/tsonglew/yuri">MIT / SOURCE ↗</a></footer>
+  <script type="module" src="./app.js"></script>
+</body>
+</html>

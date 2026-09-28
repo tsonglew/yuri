@@ -20,3 +20,13 @@ BasicCNN*
 AttackCNN*
 AttackTrainer*
 
+# Modern runtime, generated data and local previews
+.venv/
+.pytest_cache/
+dist/
+build/
+*.egg-info/
+artifacts/
+.env
+_site/
+

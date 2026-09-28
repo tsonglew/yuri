@@ -1,0 +1,172 @@
+[
+  {
+    "name": "advantage",
+    "observation": {
+      "schema_version": 1,
+      "army_supply": 32,
+      "enemy_army_supply": 18,
+      "base_threat": 0.15,
+      "army_health": 0.9,
+      "intel_age_seconds": 12,
+      "minerals": 550,
+      "gas": 250,
+      "supply_left": 18,
+      "game_time_seconds": 420,
+      "enemy_visible": true
+    },
+    "action": "attack"
+  },
+  {
+    "name": "empty",
+    "observation": {
+      "schema_version": 1,
+      "army_supply": 0,
+      "enemy_army_supply": 18,
+      "base_threat": 0.15,
+      "army_health": 0.9,
+      "intel_age_seconds": 12,
+      "minerals": 550,
+      "gas": 250,
+      "supply_left": 18,
+      "game_time_seconds": 420,
+      "enemy_visible": true
+    },
+    "action": "hold"
+  },
+  {
+    "name": "retreat before defense",
+    "observation": {
+      "schema_version": 1,
+      "army_supply": 32,
+      "enemy_army_supply": 18,
+      "base_threat": 0.9,
+      "army_health": 0.34,
+      "intel_age_seconds": 12,
+      "minerals": 550,
+      "gas": 250,
+      "supply_left": 18,
+      "game_time_seconds": 420,
+      "enemy_visible": true
+    },
+    "action": "retreat"
+  },
+  {
+    "name": "health boundary",
+    "observation": {
+      "schema_version": 1,
+      "army_supply": 32,
+      "enemy_army_supply": 18,
+      "base_threat": 0.6,
+      "army_health": 0.35,
+      "intel_age_seconds": 12,
+      "minerals": 550,
+      "gas": 250,
+      "supply_left": 18,
+      "game_time_seconds": 420,
+      "enemy_visible": true
+    },
+    "action": "defend"
+  },
+  {
+    "name": "threat boundary",
+    "observation": {
+      "schema_version": 1,
+      "army_supply": 32,
+      "enemy_army_supply": 18,
+      "base_threat": 0.6,
+      "army_health": 0.9,
+      "intel_age_seconds": 12,
+      "minerals": 550,
+      "gas": 250,
+      "supply_left": 18,
+      "game_time_seconds": 420,
+      "enemy_visible": true
+    },
+    "action": "defend"
+  },
+  {
+    "name": "intel boundary",
+    "observation": {
+      "schema_version": 1,
+      "army_supply": 32,
+      "enemy_army_supply": 18,
+      "base_threat": 0.15,
+      "army_health": 0.9,
+      "intel_age_seconds": 45,
+      "minerals": 550,
+      "gas": 250,
+      "supply_left": 18,
+      "game_time_seconds": 420,
+      "enemy_visible": true
+    },
+    "action": "scout"
+  },
+  {
+    "name": "minimum army",
+    "observation": {
+      "schema_version": 1,
+      "army_supply": 11,
+      "enemy_army_supply": 1,
+      "base_threat": 0.15,
+      "army_health": 0.9,
+      "intel_age_seconds": 12,
+      "minerals": 550,
+      "gas": 250,
+      "supply_left": 18,
+      "game_time_seconds": 420,
+      "enemy_visible": true
+    },
+    "action": "hold"
+  },
+  {
+    "name": "exact ratio",
+    "observation": {
+      "schema_version": 1,
+      "army_supply": 26,
+      "enemy_army_supply": 20,
+      "base_threat": 0.15,
+      "army_health": 0.9,
+      "intel_age_seconds": 12,
+      "minerals": 550,
+      "gas": 250,
+      "supply_left": 18,
+      "game_time_seconds": 420,
+      "enemy_visible": true
+    },
+    "action": "attack"
+  },
+  {
+    "name": "below ratio",
+    "observation": {
+      "schema_version": 1,
+      "army_supply": 25,
+      "enemy_army_supply": 20,
+      "base_threat": 0.15,
+      "army_health": 0.9,
+      "intel_age_seconds": 12,
+      "minerals": 550,
+      "gas": 250,
+      "supply_left": 18,
+      "game_time_seconds": 420,
+      "enemy_visible": true
+    },
+    "action": "hold"
+  },
+  {
+    "name": "unseen enemy",
+    "observation": {
+      "schema_version": 1,
+      "army_supply": 12,
+      "enemy_army_supply": 0,
+      "base_threat": 0.15,
+      "army_health": 0.9,
+      "intel_age_seconds": 12,
+      "minerals": 550,
+      "gas": 250,
+      "supply_left": 18,
+      "game_time_seconds": 420,
+      "enemy_visible": true
+    },
+    "action": "attack"
+  }
+]

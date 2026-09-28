@@ -1,0 +1,26 @@
+<!doctype html>
+<html lang="zh-CN"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><meta name="description" content="Yuri 开发文档：Laya 集成、WSL 环境、策略扩展与 GitHub Pages 部署。"><title>开发文档 — Yuri</title><link rel="icon" href="./favicon.svg" type="image/svg+xml"><link rel="stylesheet" href="./style.css"></head>
+<body><header class="header"><a class="brand" href="./"><span class="brand-mark">Y</span> YURI <span class="version">LAB / 02</span></a><nav aria-label="主导航"><a href="./">决策实验室</a><a class="active" href="./docs.html">开发文档</a><a href="https://github.com/tsonglew/yuri">GitHub ↗</a></nav></header>
+<main><div class="docs-layout"><aside class="docs-nav" aria-label="文档目录"><a href="#overview">项目架构</a><a href="#start">WSL 快速开始</a><a href="#laya">Laya 接入</a><a href="#replay">决策回放</a><a href="#extend">策略扩展</a><a href="#deploy">发布官网</a><a href="./development.md" download>完整开发文档 ↓</a></aside>
+<article class="prose"><p class="eyebrow">DEVELOPER GUIDE / V0.2</p><h1>一个协议，多种决策方案。</h1><p>Yuri 是面向星际争霸 II 的宏观决策实验平台。游戏提供结构化状态，策略选择动作，执行器将动作转为单位指令。</p><div class="doc-callout">规则基线和交互沙盘已实现。Laya 接口与实验性游戏适配器已加入；真实权重推理、完整对局和胜率仍需实机验收。</div>
+<h2 id="overview">项目架构</h2><pre>游戏观测 → Observation v1 → 策略 → Decision v1 → 游戏执行
+                              ↓
+                       JSON / JSONL 记录
+                              ↓
+                         官网可视化回放</pre><p>新运行时位于 <code>src/yuri_next</code>。历史 TensorFlow / Keras 代码保留作参考，不会被新入口导入。Python 3.12、uv 和可选依赖分组替代旧环境。</p><div class="table-wrap"><table><thead><tr><th>策略</th><th>状态</th><th>依赖</th></tr></thead><tbody><tr><td>Rules</td><td>离线基线</td><td>Python 标准库</td></tr><tr><td>Laya</td><td>API 适配，待实战评估</td><td>laya 0.3.21</td></tr><tr><td>行为克隆 / PPO</td><td>后续扩展</td><td>按策略添加</td></tr></tbody></table></div>
+<h2 id="start">WSL 快速开始</h2><p>在 Ubuntu 内执行，避免使用 Windows 的 Python 虚拟环境。</p><pre>cd /home/tsonglew/yuri
+uv sync --locked
+uv run --locked pytest -q
+uv run --locked yuri decide --policy rules \
+  --state examples/observation.json \
+  --output artifacts/rules.json</pre><p>连接游戏还需要 SC2 与地图，安装 <code>--extra game</code>。WSL2 网络配置见 <a href="https://github.com/BurnySc2/python-sc2#readme">burnysc2 官方说明</a>。</p>
+<h2 id="laya">Laya 接入</h2><pre>uv sync --locked --extra laya
+uv run --locked --extra laya yuri decide --policy laya \
+  --state examples/observation.json \
+  --budget-ms 120000 --output artifacts/laya.json</pre><p>首次调用需要下载权重。策略把状态与合法动作送入 <code>Router.predict</code>，读取 choice 和 answer_confidence。加载失败、低置信度、非法动作或晚到结果会回退规则。</p><p>检查 <code>executed_policy</code> 确认实际策略。置信度不是游戏胜率。实时对局使用单任务后台推理，尚不提供原生计算的硬中断。</p>
+<h2 id="replay">决策回放</h2><p>回到<a href="./">决策实验室</a>，导入导出的 JSON 或游戏产生的 JSONL。页面显示原始动作、置信度、延迟和回退原因，文件仅在浏览器本地读取。</p><p>回放冻结局面输入，异步记录地图展示执行时状态。官网不运行 Laya，也不会生成示例模型置信度。</p>
+<h2 id="extend">策略扩展</h2><p>实现 <code>decide(Observation) → Decision</code> 并注册工厂，同步更新 CLI、依赖分组和测试。执行器消费相同动作。</p><ol><li>完善规则与敌军记忆，测出基线。</li><li>用同一组地图和对手比较 Laya。</li><li>积累轨迹，再加入行为克隆、PPO 或混合策略。</li></ol><p>字段表、失败处理、升级矩阵、验收门槛和里程碑见<a href="./development.md" download>完整开发文档</a>。</p>
+<h2 id="deploy">发布官网</h2><p>目标 <code>tsonglew.github.io/yuri/</code>。仓库 Settings → Pages 中选择 GitHub Actions；默认分支的 Pages 工作流构建发布，无需修改个人根站。</p><pre>python3 scripts/build_site.py
+python3 scripts/check_site.py
+python3 -m http.server 8765 \
+  --directory _site --bind 127.0.0.1</pre><p>最终地址以工作流实际输出为准。模型、环境和对局日志不进入发布产物。</p></article></div></main><footer><span>YURI · 开源决策实验室</span><a href="./">返回交互演示 →</a><a href="https://github.com/tsonglew/yuri">MIT / SOURCE ↗</a></footer></body></html>

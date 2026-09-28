@@ -1,0 +1,13 @@
+{
+  "schema_version": 1,
+  "army_supply": 32,
+  "enemy_army_supply": 18,
+  "base_threat": 0.15,
+  "army_health": 0.9,
+  "intel_age_seconds": 12,
+  "minerals": 550,
+  "gas": 250,
+  "supply_left": 18,
+  "game_time_seconds": 420,
+  "enemy_visible": true
+}
