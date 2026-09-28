@@ -247,7 +247,11 @@ python3 -m http.server 8765 --directory _site --bind 127.0.0.1
 
 ## 13. 已知限制与来源
 
-宏观运营未经调优，多基地 / 地形处理有限；后台线程不是硬超时；权重版本尚未固定；静态站点只做规则计算和回放；旧代码依然只作历史参考。当前未宣称真实模型、整局对战、线上发布通过。
+宏观运营未经调优，多基地 / 地形处理有限；后台线程不是硬超时；权重版本尚未固定；静态站点只做规则计算和回放；旧代码依然只作历史参考。当前未宣称真实模型、整局对战通过。
+
+本次验证记录：26 项 Python 测试、12 项前端测试通过；规则 CLI 导出、burnysc2 导入和观测器 smoke test 通过。浏览器已验证五场景、滑块、重置、JSON 导入 / 导出、JSONL 时间线、坏文件拒绝和手机布局。WSL2 游戏连接地址仍需配置，未运行真实游戏或下载模型权重。
+
+官网已于 2026-09-28 发布至 [tsonglew.github.io/yuri](https://tsonglew.github.io/yuri/)，首版 [Pages 发布成功](https://github.com/tsonglew/yuri/actions/runs/36417064034)，[CI 通过](https://github.com/tsonglew/yuri/actions/runs/36417064112)。GitHub Pages 已选择 Actions，后续默认分支推送自动发布。
 
 参考：
 

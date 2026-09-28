@@ -5,7 +5,7 @@
 **0.2 状态：** 新运行时与官网已实现；真实模型推理和游戏对战尚待实机验收。旧版胜率不适用于新版本。
 
 - [完整开发设计、迁移方案与验收计划](docs/DEVELOPMENT.md)
-- 官网目标：<https://tsonglew.github.io/yuri/>（以 Pages 成功部署为准）
+- 官网与交互演示：<https://tsonglew.github.io/yuri/>
 - 环境：WSL Ubuntu / Python 3.12 / uv
 
 ## 新版快速开始
