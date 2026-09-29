@@ -27,7 +27,7 @@
 }
 
 * { box-sizing: border-box; }
-html { min-width: 320px; background: var(--bg); }
+html { min-width: 320px; overflow-x: clip; background: var(--bg); }
 body {
   min-height: 100vh;
   margin: 0;
@@ -110,6 +110,9 @@ main { width: min(1600px, 100%); margin: auto; padding: 0 4.5vw; }
   justify-content: space-between;
   gap: 20px;
   padding: 48px 0 30px;
+  background:
+    linear-gradient(180deg, #070b1140 0%, #070b1177 62%, var(--bg) 100%),
+    url("./assets/sc2-battlefield.png") center top / min(1920px, 100vw) auto no-repeat;
 }
 .intro::before {
   position: absolute;
@@ -239,7 +242,15 @@ input[type=range] { width: 100%; height: 22px; margin: 8px 0 0; accent-color: va
 .about a { color: var(--blue); font-size: 13px; }
 footer { display: flex; justify-content: space-between; gap: 20px; padding: 22px 4.5vw; border-top: 1px solid #2c3e4c; background: #090e14; color: #84929e; font-size: 11px; }
 
-.docs-layout { display: grid; grid-template-columns: 200px minmax(0, 820px); gap: 65px; margin: 48px 0 80px; }
+.docs-layout {
+  display: grid;
+  grid-template-columns: 200px minmax(0, 820px);
+  gap: 65px;
+  margin: 48px 0 80px;
+  background:
+    linear-gradient(180deg, #070b1160 0%, #070b1199 250px, #070b11 650px),
+    url("./assets/sc2-battlefield.png") 52% top / min(1920px, 100vw) auto no-repeat;
+}
 .docs-nav { position: sticky; top: 30px; display: flex; align-self: start; flex-direction: column; gap: 18px; color: #a7b4bf; font-size: 13px; }
 .prose { min-width: 0; color: #d5dee6; font-size: 15px; line-height: 1.9; }
 .prose h1 { color: #f0f5f8; font-size: 36px; font-weight: 700; line-height: 1.4; }

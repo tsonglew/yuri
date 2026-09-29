@@ -23,6 +23,11 @@ for page in ("index.html", "docs.html"):
     source = (ROOT / page).read_text(encoding="utf-8")
     assert 'lang="zh-CN"' in source and 'name="viewport"' in source
     Links().feed(source)
-expected = {"index.html", "docs.html", "style.css", "app.js", "policy.mjs", "favicon.svg", "development.md", ".nojekyll"}
-assert {p.name for p in ROOT.iterdir()} == expected, "Unexpected files in publish artifact"
+expected = {
+    "index.html", "docs.html", "style.css", "app.js", "policy.mjs", "favicon.svg",
+    "development.md", ".nojekyll", "assets/sc2-battlefield.png",
+}
+actual = {p.relative_to(ROOT).as_posix() for p in ROOT.rglob("*") if p.is_file()}
+assert actual == expected, "Unexpected files in publish artifact"
+assert 'url("./assets/sc2-battlefield.png")' in (ROOT / "style.css").read_text(encoding="utf-8")
 print("Static links, /yuri/ compatibility and artifact allowlist passed")
