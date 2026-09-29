@@ -18,13 +18,24 @@ uv run --locked pytest -q
 uv run --locked yuri decide --policy rules \
   --state examples/observation.json --output artifacts/rules.json
 
-# Laya 首次调用会下载模型；请检查 executed_policy 是否实际为 laya
-uv run --locked --extra laya yuri decide --policy laya \
+# 真实模型首次预热，输出模型 revision、torch / CUDA / 设备信息
+uv run --locked --extra laya yuri preflight \
   --state examples/observation.json --budget-ms 120000 \
-  --output artifacts/laya.json
+  --output artifacts/laya-preflight.json
 
-# 实验游戏入口，需预先安装 SC2 与地图
-uv run --locked --extra game yuri game --policy rules --map AbyssalReefLE
+# 检查 status=passed 和 decision.executed_policy=laya
+# 后续将 decision.model_revision 设为 YURI_LAYA_REVISION 固定权重
+
+# 实验游戏入口，需先设置 WSL2 连接变量、SC2PATH 并安装地图
+export SC2PATH='/mnt/c/Program Files (x86)/Battle.net/StarCraft II'
+read -r -p 'Windows 可达的 IPv4 地址: ' SC2CLIENTHOST
+export SC2CLIENTHOST SC2SERVERHOST=0.0.0.0
+uv run --locked --extra game yuri doctor --map AcropolisLE
+uv run --locked --extra game yuri game --policy rules --map AcropolisLE --seed 1
+
+# 两条策略用相同种子配对运行；需要本地地图并启用两种 extra
+uv run --locked --extra game --extra laya yuri evaluate \
+  --policies rules laya --games-per-policy 10 --seed-start 1 --map AcropolisLE
 
 # 官网预览
 python3 scripts/build_site.py

@@ -58,6 +58,8 @@ class Decision:
     fallback_reason: str | None = None
     model: str | None = None
     schema_version: int = 1
+    model_revision: str | None = None
+    proposed_action: Action | None = None
 
     def to_dict(self):
         return asdict(self)

@@ -13,6 +13,8 @@ function render(record){current=record;const o=record.observation,d=record.decis
   $('executed').textContent=d.executed_policy==='rules'?'规则基线':d.executed_policy;
   $('confidence').textContent=d.confidence==null?'不适用':`${(d.confidence*100).toFixed(1)}%`;
   $('latency').textContent=d.latency_ms==null?'未记录':`${d.latency_ms.toFixed(2)} ms`;
+  $('proposed').textContent=d.proposed_action?labels[d.proposed_action]:'与执行动作一致';
+  $('revision').textContent=d.model_revision|| (d.model?'未记录':'不适用');
   $('source-badge').textContent=replay?`REPLAY / ${d.executed_policy.toUpperCase()}`:'RULES';
   $('decision-kicker').textContent=replay?'导入记录 · 原始结果':'当前建议';
   $('flow-policy').textContent=d.executed_policy==='laya'?'Laya 策略':'规则策略';$('flow-detail').textContent=replay?'记录回放':'优先级判断';
@@ -20,9 +22,9 @@ function render(record){current=record;const o=record.observation,d=record.decis
   const index=replay?null:d.ruleIndex;document.querySelectorAll('#rule-list li').forEach((li,i)=>li.classList.toggle('selected',i===index));
   const routes={attack:'M210 275Q330 130 490 115',defend:'M210 275Q145 220 114 300',retreat:'M210 275Q190 340 130 340',scout:'M210 275Q400 340 530 150',hold:'M210 275Q170 245 155 300'};
   $('route').setAttribute('d',routes[d.action]);$('route').style.opacity=o.army_supply>0?'1':'0';
-  $('threat-ring').style.opacity=String(o.base_threat);dots('allies',o.army_supply,210,270,'#126c4e');dots('enemies',o.enemy_army_supply,o.base_threat>=.6?160:450,o.base_threat>=.6?335:145,'#bd6045');
+  $('threat-ring').style.opacity=String(o.base_threat);dots('allies',o.army_supply,210,270,'#55c9f2');dots('enemies',o.enemy_army_supply,o.base_threat>=.6?160:450,o.base_threat>=.6?335:145,'#dc8c3c');
   $('map-action').textContent={attack:'推进至敌方区域',defend:'回防己方基地',retreat:'撤回安全区域',scout:'更新敌方情报',hold:'基地附近集结'}[d.action];
-  $('map-ratio').textContent=o.enemy_army_supply>0?`兵力比 ${(o.army_supply/o.enemy_army_supply).toFixed(2)} : 1`:'无已知敌军兵力';
+  $('map-ratio').textContent=o.enemy_army_supply>0?`对最后可见兵力 ${(o.army_supply/o.enemy_army_supply).toFixed(2)} : 1`:'无已知敌军兵力';
   $('exit-replay').hidden=!replay;$('timeline').hidden=!replay;
   if(replay){$('frame').max=records.length-1;$('frame').value=frame;$('frame-label').textContent=`${frame+1} / ${records.length}`;$('previous').disabled=frame===0;$('next').disabled=frame===records.length-1;}
 }

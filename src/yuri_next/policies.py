@@ -3,6 +3,7 @@
 from dataclasses import replace
 import json
 import math
+import os
 from time import perf_counter
 from typing import Callable
 
@@ -37,12 +38,14 @@ class LayaPolicy:
     """
 
     def __init__(self, *, min_confidence=0.65, budget_ms=1500,
-                 model="english", router_factory: Callable | None = None):
+                 model="english", revision: str | None = None,
+                 router_factory: Callable | None = None):
         if not math.isfinite(min_confidence) or not 0 <= min_confidence <= 1 or not math.isfinite(budget_ms) or budget_ms <= 0:
             raise ValueError("Invalid confidence threshold or time budget")
         self.min_confidence = min_confidence
         self.budget_ms = budget_ms
         self.model = model
+        self.revision = revision if revision is not None else os.environ.get("YURI_LAYA_REVISION")
         self._factory = router_factory
         self._router = None
         self.fallback = RulePolicy()
@@ -51,7 +54,7 @@ class LayaPolicy:
         if self._router is None:
             if self._factory is None:
                 from laya import Router
-                self._router = Router()
+                self._router = Router(revision=self.revision)
             else:
                 self._router = self._factory()
         return self._router
@@ -69,7 +72,7 @@ class LayaPolicy:
             }
             questions = {"action": {
                 "type": "choice",
-                "instructions": "Choose one StarCraft II macro action. Enemy supply is an observed lower bound, not total enemy strength. Prefer survival when uncertain.",
+                "instructions": "Choose one StarCraft II macro action. Enemy supply is a last-seen estimate, not a guaranteed current count or total enemy strength. Prefer survival when uncertain.",
                 "criteria": {k: v for k, v in criteria.items() if Action(k) in allowed},
             }}
             result = self._get_router().predict(
@@ -90,8 +93,11 @@ class LayaPolicy:
             elapsed = (perf_counter() - start) * 1000
             if elapsed > self.budget_ms:
                 raise TimeoutError("decision_budget_exceeded")
+            revisions = getattr(self._router, "loaded_revisions", {})
+            model_revision = revisions.get(self.model) if isinstance(revisions, dict) else None
             return Decision(action, "laya", "laya", "Selected by Laya; no generated explanation.",
-                            elapsed, confidence, model=self.model)
+                            elapsed, confidence, model=self.model,
+                            model_revision=model_revision)
         except Exception as error:
             fallback = self.fallback.decide(observation)
             return replace(fallback, requested_policy="laya", model=self.model,
